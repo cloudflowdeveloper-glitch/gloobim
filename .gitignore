@@ -1,54 +1,43 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
+/vendor/
 node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
+# uploads (large binary files)
+/public/uploads/
 
 # misc
 .DS_Store
 *.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-local-*
-.claude
-.z-ai-config
 *.log
 dev.log
 dev.out.log
-test
-prompt
-
 server.log
-# Skills directory
+
+# env files
+.env*
+!.env.example
+
+# tool results
+/tool-results/
+
+# skills
 /skills/
+.claude
+.z-ai-config
+
+# stray files at root
+/card_*.jpg
+/nul
+
+# upload mount point
+/upload/
+
+# database
+*.sqlite
+*.sqlite3
+/db/*.sqlite*
+
+# temp
+*.tmp
+*.swp
+*~
