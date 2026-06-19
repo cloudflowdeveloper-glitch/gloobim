@@ -1,0 +1,1115 @@
+     1→<?php $hideTopNav = true; $activeTab = 'home'; $title = 'Globiim - Home'; ?>
+     2→<?php extract($data ?? []); ?>
+     3→<?php ob_start(); ?>
+     4→<style>
+     5→    @keyframes pulse-live { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+     6→    .pulse-live { animation: pulse-live 2s ease-in-out infinite; }
+     7→
+     8→    .story-ring { background: linear-gradient(135deg, #9333ea, #ec4899, #f59e0b); padding: 3.5px; border-radius: 50%; }
+     9→    .story-ring-seen { background: #3f3f46; padding: 3.5px; border-radius: 50%; }
+    10→    .scroll-snap-x { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+    11→    .scroll-snap-x > * { scroll-snap-align: start; }
+    12→
+    13→    .hover-scale { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    14→    .hover-scale:hover { transform: scale(1.03); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+    15→
+    16→    .quick-action { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+    17→    .quick-action:hover { transform: translateY(-4px); }
+    18→    .quick-action:hover .qa-icon { box-shadow: 0 4px 20px rgba(131,74,229,0.4); }
+    19→    .quick-action:active { transform: scale(0.92); }
+    20→
+    21→    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    22→    .shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.06) 50%, transparent 75%); background-size: 200% 100%; animation: shimmer 3s infinite; }
+    23→
+    24→    .category-chip { transition: all 0.25s ease; }
+    25→    .category-chip:hover { background: rgba(131,74,229,0.15); color: #c084fc; }
+    26→    .category-chip.active { background: linear-gradient(135deg, #834ae5, #6b21a8); color: white; box-shadow: 0 4px 15px rgba(131,74,229,0.3); }
+    27→
+    28→    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    29→    .float-anim { animation: float 3s ease-in-out infinite; }
+    30→
+    31→    .post-card { transition: all 0.2s ease; }
+    32→    .post-card:hover { border-color: rgba(131,74,229,0.2); }
+    33→
+    34→    .action-btn { transition: all 0.2s ease; }
+    35→    .action-btn:hover { transform: scale(1.15); }
+    36→    .action-btn:active { transform: scale(0.9); }
+    37→
+    38→    .follow-post-btn { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+    39→    .follow-post-btn:active { transform: scale(0.92); }
+    40→
+    41→    .live-badge { animation: pulse-live 1.5s ease-in-out infinite; }
+    42→
+    43→    @keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    44→    .gradient-animate { background-size: 200% 200%; animation: gradient-shift 4s ease infinite; }
+    45→
+    46→    /* ===== SPOTLIGHT CAROUSEL ===== */
+    47→    .spotlight-track {
+    48→        display: flex;
+    49→        gap: 12px;
+    50→        overflow-x: auto;
+    51→        scroll-snap-type: x mandatory;
+    52→        -webkit-overflow-scrolling: touch;
+    53→        padding: 4px 0 8px 0;
+    54→        scrollbar-width: none;
+    55→    }
+    56→    .spotlight-track::-webkit-scrollbar { display: none; }
+    57→
+    58→    .spotlight-card {
+    59→        flex: 0 0 calc(100% - 48px);
+    60→        min-width: calc(100% - 48px);
+    61→        scroll-snap-align: center;
+    62→        position: relative;
+    63→        border-radius: 20px;
+    64→        overflow: hidden;
+    65→        transition: transform 0.35s cubic-bezier(0.25,0.8,0.25,1);
+    66→    }
+    67→    .spotlight-card:first-child { margin-left: 16px; }
+    68→
+    69→    .spotlight-card img {
+    70→        width: 100%;
+    71→        aspect-ratio: 16/9;
+    72→        object-fit: cover;
+    73→        display: block;
+    74→    }
+    75→
+    76→    .spotlight-card .card-gradient {
+    77→        position: absolute;
+    78→        inset: 0;
+    79→        background: linear-gradient(to top, rgba(9,12,21,0.95) 0%, rgba(9,12,21,0.3) 50%, transparent 100%);
+    80→    }
+    81→
+    82→    .spotlight-card .card-content {
+    83→        position: absolute;
+    84→        bottom: 0;
+    85→        left: 0;
+    86→        right: 0;
+    87→        padding: 20px;
+    88→    }
+    89→
+    90→    .spotlight-card .card-badge {
+    91→        display: inline-flex;
+    92→        align-items: center;
+    93→        gap: 4px;
+    94→        padding: 4px 10px;
+    95→        border-radius: 8px;
+    96→        font-size: 11px;
+    97→        font-weight: 700;
+    98→        color: white;
+    99→        margin-bottom: 8px;
+   100→    }
+   101→
+   102→    .spotlight-card .card-shimmer {
+   103→        position: absolute;
+   104→        inset: 0;
+   105→        background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.04) 50%, transparent 75%);
+   106→        background-size: 200% 100%;
+   107→        animation: shimmer 3s infinite;
+   108→        pointer-events: none;
+   109→    }
+   110→
+   111→    .spotlight-card .card-cta {
+   112→        display: inline-flex;
+   113→        align-items: center;
+   114→        gap: 6px;
+   115→        margin-top: 10px;
+   116→        padding: 8px 18px;
+   117→        border-radius: 12px;
+   118→        font-size: 12px;
+   119→        font-weight: 700;
+   120→        color: white;
+   121→        text-decoration: none;
+   122→        transition: all 0.25s ease;
+   123→    }
+   124→    .spotlight-card .card-cta:hover { transform: translateY(-2px); filter: brightness(1.15); }
+   125→
+   126→    /* Progress dots */
+   127→    .spotlight-dots {
+   128→        display: flex;
+   129→        justify-content: center;
+   130→        gap: 6px;
+   131→        padding: 8px 0 4px;
+   132→    }
+   133→    .spotlight-dot {
+   134→        width: 8px;
+   135→        height: 8px;
+   136→        border-radius: 50%;
+   137→        background: #3f3f46;
+   138→        transition: all 0.35s ease;
+   139→        cursor: pointer;
+   140→    }
+   141→    .spotlight-dot.active {
+   142→        width: 24px;
+   143→        border-radius: 4px;
+   144→        background: linear-gradient(135deg, #834ae5, #c084fc);
+   145→        box-shadow: 0 2px 8px rgba(131,74,229,0.4);
+   146→    }
+   147→
+   148→    /* Featured content card special styling */
+   149→    .spotlight-card.featured-card .card-cta {
+   150→        background: linear-gradient(135deg, #834ae5, #4f09f5);
+   151→        box-shadow: 0 4px 15px rgba(131,74,229,0.4);
+   152→    }
+   153→</style>
+   154→
+   155→<div class="max-w-lg mx-auto pb-4">
+   156→
+   157→    <!-- ===== HEADER ===== -->
+   158→    <div class="px-4 pt-3 pb-2">
+   159→        <div class="flex items-center justify-between mb-3">
+   160→            <div class="flex items-center gap-2">
+   161→                <img src="/logo.jpeg" alt="Globiim" class="h-10 w-auto rounded-xl object-contain">
+   162→                <h1 class="font-display text-2xl font-bold tracking-tight">
+   163→                    <span class="text-white">Glo</span><span class="gradient-text">biim</span>
+   164→                </h1>
+   165→            </div>
+   166→            <div class="flex items-center gap-2">
+   167→                <a href="/messages" class="w-10 h-10 rounded-full bg-[#14141c] flex items-center justify-center hover:bg-[#1e1e2a] transition-colors relative border border-[#1e1e2a]">
+   168→                    <span class="material-icons-round text-zinc-300 text-[20px]">chat_bubble_outline</span>
+   169→                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#834ae5] rounded-full"></span>
+   170→                </a>
+   171→                <button onclick="showToast('No new notifications')" class="w-10 h-10 rounded-full bg-[#14141c] flex items-center justify-center hover:bg-[#1e1e2a] transition-colors relative border border-[#1e1e2a]">
+   172→                    <span class="material-icons-round text-zinc-300 text-[20px]">notifications_none</span>
+   173→                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+   174→                </button>
+   175→                <div class="w-9 h-9 rounded-full overflow-hidden" style="box-shadow: 0 0 0 2px rgba(131,74,229,0.5);">
+   176→                    <img src="https://placehold.co/80x80/6d28d9/ffffff?text=U" alt="Profile" class="w-full h-full object-cover">
+   177→                </div>
+   178→            </div>
+   179→        </div>
+   180→
+   181→        <!-- ===== SEARCH BAR ===== -->
+   182→        <div class="relative mb-3">
+   183→            <span class="material-icons-round absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 text-lg">search</span>
+   184→            <input type="text" placeholder="Search creators, reels, music..." class="w-full bg-[#14141c] text-white pl-10 pr-4 py-2.5 rounded-xl border border-[#1e1e2a] focus:border-[#834ae5] focus:outline-none text-sm placeholder:text-zinc-600 transition-all">
+   185→            <button class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-[#1e1e2a] transition-colors">
+   186→                <span class="material-icons-round text-zinc-500 text-lg">tune</span>
+   187→            </button>
+   188→        </div>
+   189→
+   190→        <!-- ===== CATEGORY CHIPS ===== -->
+   191→        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1 scroll-snap-x">
+   192→            <?php foreach ($categories as $idx => $cat): ?>
+   193→            <button class="category-chip <?= $idx === 0 ? 'active' : '' ?> flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-xs font-medium border border-[#1e1e2a]" onclick="selectCategory(this)">
+   194→                <span class="flex items-center gap-1">
+   195→                    <span class="material-icons-round text-[14px]"><?= $cat['icon'] ?></span>
+   196→                    <?= $cat['name'] ?>
+   197→                </span>
+   198→            </button>
+   199→            <?php endforeach; ?>
+   200→        </div>
+   201→    </div>
+   202→
+   203→    <!-- ===== STORIES ROW ===== -->
+   204→    <div class="px-4 py-3 border-t border-[#14141c]/60">
+   205→        <div class="flex items-center justify-between mb-2">
+   206→            <h2 class="text-white text-sm font-bold">Stories</h2>
+   207→            <?php if (!empty($storyGroups)): ?>
+   208→            <a href="/stories" class="text-[11px] font-semibold flex items-center gap-0.5" style="color: #834ae5;">
+   209→                View all <span class="material-icons-round text-sm">chevron_right</span>
+   210→            </a>
+   211→            <?php endif; ?>
+   212→        </div>
+   213→        <div class="flex gap-5 overflow-x-auto scrollbar-hide py-1 scroll-snap-x">
+   214→            <!-- Your Story -->
+   215→            <a href="/stories/create" class="flex-shrink-0 flex flex-col items-center gap-2.5 w-[100px]">
+   216→                <div class="w-[88px] h-[88px] rounded-full bg-[#14141c] border-2 border-dashed border-zinc-700 flex items-center justify-center hover:border-[#834ae5] transition-colors">
+   217→                    <span class="material-icons-round text-[#834ae5] text-4xl">add</span>
+   218→                </div>
+   219→                <span class="text-[11px] text-zinc-500 font-medium truncate w-full text-center">Your Story</span>
+   220→            </a>
+   221→            <!-- Dynamic Stories from DB -->
+   222→            <?php foreach ($storyGroups as $group): ?>
+   223→            <a href="/stories/<?= $group['stories'][0]['id'] ?? '#' ?>"
+   224→               class="flex-shrink-0 flex flex-col items-center gap-2.5 w-[100px]">
+   225→                <div class="<?= $group['has_unseen'] ? 'story-ring' : 'story-ring-seen' ?>" style="padding: 3.5px;">
+   226→                    <div class="w-[80px] h-[80px] rounded-full overflow-hidden bg-[#14141c]">
+   227→                        <img src="<?= $group['avatar'] ?>" alt="<?= $group['name'] ?>"
+   228→                             class="w-full h-full object-cover">
+   229→                    </div>
+   230→                </div>
+   231→                <span class="text-[11px] text-zinc-400 font-medium truncate w-full text-center">
+   232→                    <?= htmlspecialchars(explode(' ', $group['name'])[0]) ?>
+   233→                </span>
+   234→                <?php if (count($group['stories']) > 1): ?>
+   235→                <span class="text-[9px] text-zinc-600 -mt-2">+<?= count($group['stories']) - 1 ?></span>
+   236→                <?php endif; ?>
+   237→            </a>
+   238→            <?php endforeach; ?>
+   239→            <!-- Fallback: show creators if no stories exist -->
+   240→            <?php if (empty($storyGroups)): ?>
+   241→            <?php foreach ($topCreators as $i => $creator): ?>
+   242→            <a href="/creator/<?= $creator['username'] ?>" class="flex-shrink-0 flex flex-col items-center gap-2.5 w-[100px]">
+   243→                <div class="<?= $i < 4 ? 'story-ring' : 'story-ring-seen' ?>" style="padding: 3.5px;">
+   244→                    <div class="w-[80px] h-[80px] rounded-full overflow-hidden bg-[#14141c]">
+   245→                        <img src="<?= $creator['avatar'] ?>" alt="<?= $creator['name'] ?>" class="w-full h-full object-cover">
+   246→                    </div>
+   247→                </div>
+   248→                <span class="text-[11px] text-zinc-400 font-medium truncate w-full text-center"><?= explode(' ', $creator['name'])[0] ?></span>
+   249→            </a>
+   250→            <?php endforeach; ?>
+   251→            <?php endif; ?>
+   252→        </div>
+   253→    </div>
+   254→
+   255→    <!-- ===== QUICK ACTION ICONS ===== -->
+   256→    <div class="px-4 py-4 border-t border-[#14141c]/60">
+   257→        <div class="grid grid-cols-4 gap-6">
+   258→            <?php foreach ($quickActions as $action): ?>
+   259→            <a href="<?= $action['url'] ?>" class="quick-action flex flex-col items-center gap-2">
+   260→                <div class="qa-icon w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style="background: <?= $action['color'] ?>;">
+   261→                    <span class="material-icons-round text-white text-2xl"><?= $action['icon'] ?></span>
+   262→                </div>
+   263→                <span class="text-zinc-300 text-[10px] font-semibold"><?= $action['name'] ?></span>
+   264→            </a>
+   265→            <?php endforeach; ?>
+   266→        </div>
+   267→    </div>
+   268→
+   269→    <!-- ===== FEATURED BANNER ===== -->
+   270→    <?php $feat = $featuredContent ?? ['title' => 'Discover, Create & Share', 'subtitle' => 'Your creative universe awaits.', 'cover_url' => '/uploads/home/featured_banner.jpg', 'creators_online' => '12.4K+', 'daily_views' => '5.6M+']; ?>
+   271→    <div class="px-4 py-2 border-t border-[#14141c]/60">
+   272→        <div class="relative rounded-2xl overflow-hidden hover-scale" style="box-shadow: 0 0 30px rgba(131,74,229,0.1);">
+   273→            <img src="<?= $feat['cover_url'] ?>" alt="Featured" class="w-full aspect-[2/1] object-cover">
+   274→            <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+   275→            <div class="absolute inset-0 shimmer"></div>
+   276→            <div class="absolute inset-0 flex flex-col justify-center p-5">
+   277→                <h2 class="font-display text-xl font-bold text-white leading-tight max-w-[60%]"><?= $feat['title'] ?></h2>
+   278→                <p class="text-zinc-300 text-xs mt-1 max-w-[55%]"><?= $feat['subtitle'] ?></p>
+   279→                <div class="flex items-center gap-3 mt-3">
+   280→                    <button class="px-5 py-2 rounded-full text-white text-xs font-bold shadow-lg hover:opacity-90 transition-opacity" style="background: linear-gradient(135deg, #834ae5, #4f09f5); box-shadow: 0 4px 15px rgba(131,74,229,0.4);">
+   281→                        Explore Now
+   282→                    </button>
+   283→                </div>
+   284→            </div>
+   285→            <div class="absolute bottom-3 right-4 flex flex-col items-end gap-1">
+   286→                <div class="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-1.5">
+   287→                    <span class="text-white text-sm font-bold"><?= $feat['creators_online'] ?></span>
+   288→                    <span class="text-zinc-400 text-[9px] block">Creators Online</span>
+   289→                </div>
+   290→            </div>
+   291→        </div>
+   292→    </div>
+   293→
+   294→    <!-- ===== SMART SPOTLIGHT CAROUSEL ===== -->
+   295→    <div class="py-3 border-t border-[#14141c]/60">
+   296→        <div class="flex items-center justify-between px-4 mb-3">
+   297→            <div class="flex items-center gap-2">
+   298→                <span class="material-icons-round text-[18px]" style="color: #834ae5;">auto_awesome</span>
+   299→                <h2 class="text-white text-sm font-bold">Spotlight</h2>
+   300→            </div>
+   301→            <a href="/reels" class="text-[11px] font-semibold flex items-center gap-0.5" style="color: #834ae5;">
+   302→                See all <span class="material-icons-round text-sm">chevron_right</span>
+   303→            </a>
+   304→        </div>
+   305→
+   306→        <div class="spotlight-track" id="spotlightTrack">
+   307→            <?php
+   308→            // First card: Featured content (top reel)
+   309→            $featuredReel = !empty($discoverGrid) ? $discoverGrid[0] : null;
+   310→            if ($featuredReel):
+   311→            ?>
+   312→            <!-- Card 1: Featured Content -->
+   313→            <a href="/reels/<?= $featuredReel['id'] ?>" class="spotlight-card featured-card">
+   314→                <img src="<?= $featuredReel['cover_url'] ?>" alt="<?= $featuredReel['title'] ?>">
+   315→                <div class="card-shimmer"></div>
+   316→                <div class="card-gradient"></div>
+   317→                <div class="absolute top-3 left-4">
+   318→                    <span class="card-badge" style="background: linear-gradient(135deg, #834ae5, #4f09f5);">
+   319→                        <span class="material-icons-round text-[12px]">local_fire_department</span>
+   320→                        Trending
+   321→                    </span>
+   322→                </div>
+   323→                <div class="absolute top-3 right-3 bg-black/50 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1">
+   324→                    <span class="material-icons-round text-white text-[14px]">visibility</span>
+   325→                    <span class="text-white text-[11px] font-semibold"><?= formatCount($featuredReel['views'] ?? 0) ?></span>
+   326→                </div>
+   327→                <div class="card-content">
+   328→                    <h3 class="text-white text-base font-bold leading-tight mb-1"><?= $featuredReel['title'] ?></h3>
+   329→                    <span class="card-cta">
+   330→                        <span class="material-icons-round text-[14px]">play_arrow</span>
+   331→                        Watch Now
+   332→                    </span>
+   333→                </div>
+   334→            </a>
+   335→            <?php endif; ?>
+   336→
+   337→            <?php if (empty($featuredReel)): ?>
+   338→            <!-- Fallback Card 1 if no content -->
+   339→            <a href="/reels" class="spotlight-card featured-card">
+   340→                <img src="/uploads/home/featured_banner.jpg" alt="Featured">
+   341→                <div class="card-shimmer"></div>
+   342→                <div class="card-gradient"></div>
+   343→                <div class="absolute top-3 left-4">
+   344→                    <span class="card-badge" style="background: linear-gradient(135deg, #834ae5, #4f09f5);">
+   345→                        <span class="material-icons-round text-[12px]">local_fire_department</span>
+   346→                        Trending
+   347→                    </span>
+   348→                </div>
+   349→                <div class="card-content">
+   350→                    <h3 class="text-white text-base font-bold leading-tight mb-1">Discover Trending Clips</h3>
+   351→                    <span class="card-cta">
+   352→                        <span class="material-icons-round text-[14px]">play_arrow</span>
+   353→                        Watch Now
+   354→                    </span>
+   355→                </div>
+   356→            </a>
+   357→            <?php endif; ?>
+   358→
+   359→            <!-- Cards 2-4: Admin Spotlight Ads -->
+   360→            <?php foreach ($spotlightAds as $ad): ?>
+   361→            <a href="<?= $ad['link_url'] ?? '#' ?>" class="spotlight-card">
+   362→                <img src="<?= $ad['image_url'] ?>" alt="<?= $ad['title'] ?>">
+   363→                <div class="card-shimmer"></div>
+   364→                <div class="card-gradient"></div>
+   365→                <div class="absolute top-3 left-4">
+   366→                    <span class="card-badge" style="background: <?= $ad['badge_color'] ?? '#834ae5' ?>;">
+   367→                        <span class="material-icons-round text-[12px]">campaign</span>
+   368→                        <?= htmlspecialchars($ad['badge'] ?? 'Ad') ?>
+   369→                    </span>
+   370→                </div>
+   371→                <div class="card-content">
+   372→                    <h3 class="text-white text-base font-bold leading-tight mb-0.5"><?= htmlspecialchars($ad['title']) ?></h3>
+   373→                    <?php if (!empty($ad['subtitle'])): ?>
+   374→                    <p class="text-zinc-300 text-xs"><?= htmlspecialchars($ad['subtitle']) ?></p>
+   375→                    <?php endif; ?>
+   376→                    <span class="card-cta" style="background: <?= $ad['badge_color'] ?? '#834ae5' ?>; box-shadow: 0 4px 15px <?= $ad['badge_color'] ?? '#834ae5' ?>33;">
+   377→                        Learn More
+   378→                        <span class="material-icons-round text-[14px]">arrow_forward</span>
+   379→                    </span>
+   380→                </div>
+   381→            </a>
+   382→            <?php endforeach; ?>
+   383→        </div>
+   384→
+   385→        <!-- Progress Dots -->
+   386→        <div class="spotlight-dots" id="spotlightDots">
+   387→            <?php
+   388→            $totalCards = 1 + count($spotlightAds);
+   389→            for ($d = 0; $d < $totalCards; $d++):
+   390→            ?>
+   391→            <div class="spotlight-dot <?= $d === 0 ? 'active' : '' ?>" data-index="<?= $d ?>" onclick="goToSlide(<?= $d ?>)"></div>
+   392→            <?php endfor; ?>
+   393→        </div>
+   394→    </div>
+   395→
+   396→    <!-- ===== LIVE NOW ===== -->
+   397→    <?php if (!empty($liveNow)): ?>
+   398→    <div class="px-4 py-3 border-t border-[#14141c]/60">
+   399→        <div class="flex items-center justify-between mb-3">
+   400→            <div class="flex items-center gap-2">
+   401→                <span class="w-2 h-2 bg-red-500 rounded-full live-badge"></span>
+   402→                <h2 class="text-white text-sm font-bold">Live Now</h2>
+   403→            </div>
+   404→            <a href="/livestream" class="text-[11px] font-semibold" style="color: #834ae5;">See all</a>
+   405→        </div>
+   406→        <div class="flex gap-3 overflow-x-auto scrollbar-hide scroll-snap-x">
+   407→            <?php foreach ($liveNow as $stream): ?>
+   408→            <a href="/livestream/<?= $stream['id'] ?>" class="flex-shrink-0 w-[220px] group">
+   409→                <div class="relative rounded-xl overflow-hidden hover-scale">
+   410→                    <img src="<?= $stream['thumbnail'] ?>" alt="<?= $stream['title'] ?>" class="w-full aspect-video object-cover">
+   411→                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+   412→                    <div class="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-600 text-white text-[10px] font-bold">
+   413→                        <span class="w-1.5 h-1.5 bg-white rounded-full live-badge"></span>
+   414→                        LIVE
+   415→                    </div>
+   416→                    <div class="absolute top-2 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-[10px]">
+   417→                        <span class="material-icons-round text-[12px]">visibility</span>
+   418→                        <?= formatCount($stream['viewers']) ?>
+   419→                    </div>
+   420→                    <div class="absolute bottom-2 left-2 right-2 flex items-center gap-2">
+   421→                        <img src="<?= $stream['creator_avatar'] ?>" alt="" class="w-6 h-6 rounded-full border border-white/30">
+   422→                        <div class="min-w-0">
+   423→                            <p class="text-white text-[11px] font-semibold truncate"><?= $stream['title'] ?></p>
+   424→                            <p class="text-white/50 text-[9px]"><?= $stream['creator_name'] ?? '' ?></p>
+   425→                        </div>
+   426→                    </div>
+   427→                </div>
+   428→            </a>
+   429→            <?php endforeach; ?>
+   430→        </div>
+   431→    </div>
+   432→    <?php endif; ?>
+   433→
+   434→    <!-- ===== TRENDING REELS ===== -->
+   435→    <div class="px-4 py-3 border-t border-[#14141c]/60">
+   436→        <div class="flex items-center justify-between mb-3">
+   437→            <div class="flex items-center gap-2">
+   438→                <span class="material-icons-round text-[18px]" style="color: #834ae5;">movie</span>
+   439→                <h2 class="text-white text-sm font-bold">Trending Clips</h2>
+   440→            </div>
+   441→            <a href="/reels" class="text-[11px] font-semibold flex items-center gap-0.5" style="color: #834ae5;">
+   442→                See all <span class="material-icons-round text-sm">chevron_right</span>
+   443→            </a>
+   444→        </div>
+   445→        <div class="flex gap-2.5 overflow-x-auto scrollbar-hide scroll-snap-x">
+   446→            <?php foreach ($trendingReels as $reel): ?>
+   447→            <a href="/reels/<?= $reel['id'] ?>" class="flex-shrink-0 w-[130px] group">
+   448→                <div class="relative rounded-xl overflow-hidden mb-1.5 hover-scale">
+   449→                    <img src="<?= $reel['thumbnail'] ?>" alt="<?= $reel['title'] ?>" class="w-full aspect-[9/16] object-cover">
+   450→                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+   451→                    <div class="absolute bottom-2 left-2 right-2">
+   452→                        <p class="text-white text-[11px] font-semibold leading-tight line-clamp-2"><?= $reel['title'] ?></p>
+   453→                    </div>
+   454→                    <div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-lg bg-black/70 backdrop-blur-sm text-white text-[9px] font-medium">
+   455→                        0:<?= str_pad($reel['duration'] ?? 30, 2, '0', STR_PAD_LEFT) ?>
+   456→                    </div>
+   457→                    <div class="absolute bottom-2 right-2 flex items-center gap-0.5">
+   458→                        <span class="material-icons-round text-white/80 text-[10px]">play_arrow</span>
+   459→                        <span class="text-white/80 text-[9px]"><?= formatCount($reel['views'] ?? 0) ?></span>
+   460→                    </div>
+   461→                </div>
+   462→                <div class="flex items-center gap-1.5 px-0.5">
+   463→                    <img src="<?= $reel['creator_avatar'] ?? '/uploads/home/story_1.jpg' ?>" class="w-4 h-4 rounded-full">
+   464→                    <span class="text-zinc-400 text-[10px] truncate"><?= $reel['creator_name'] ?? '' ?></span>
+   465→                </div>
+   466→            </a>
+   467→            <?php endforeach; ?>
+   468→        </div>
+   469→    </div>
+   470→
+   471→    <!-- ===== POSTS FEED ===== -->
+   472→    <div class="px-4 py-3 border-t border-[#14141c]/60">
+   473→        <div class="flex items-center justify-between mb-3">
+   474→            <div class="flex items-center gap-2">
+   475→                <span class="material-icons-round text-[18px]" style="color: #834ae5;">article</span>
+   476→                <h2 class="text-white text-sm font-bold">Feed</h2>
+   477→            </div>
+   478→            <div class="flex gap-2">
+   479→                <button class="px-3 py-1 rounded-full text-white text-[11px] font-semibold" style="background: linear-gradient(135deg, #834ae5, #6b21a8);">For You</button>
+   480→                <button class="px-3 py-1 rounded-full bg-[#14141c] text-zinc-400 text-[11px] font-medium border border-[#1e1e2a]">Following</button>
+   481→            </div>
+   482→        </div>
+   483→        <div class="space-y-4">
+   484→            <?php foreach ($posts as $post): ?>
+   485→            <article class="post-card bg-[#14141c] rounded-2xl border border-[#1e1e2a] overflow-hidden">
+   486→                <div class="p-3.5">
+   487→                    <!-- Post Header -->
+   488→                    <div class="flex items-center gap-2.5 mb-2.5">
+   489→                        <div class="story-ring" style="padding: 1.5px;">
+   490→                            <img src="<?= $post['creator_avatar'] ?? '/uploads/home/story_1.jpg' ?>" alt="" class="w-9 h-9 rounded-full object-cover">
+   491→                        </div>
+   492→                        <div class="flex-1 min-w-0">
+   493→                            <div class="flex items-center gap-1">
+   494→                                <span class="text-white text-[13px] font-semibold"><?= $post['creator_name'] ?? '' ?></span>
+   495→                                <?php if (!empty($post['is_verified'])): ?>
+   496→                                <span class="material-icons-round text-[13px]" style="color: #834ae5;">verified</span>
+   497→                                <?php endif; ?>
+   498→                                <span class="text-zinc-600 text-[11px]">¡¤ <?= timeAgo($post['created_at']) ?></span>
+   499→                            </div>
+   500→                        </div>
+   501→                        <?php $postIsFollowing = !empty($post['is_following']); ?>
+   502→                        <button onclick="followPostCreator(<?= $post['user_id'] ?? 0 ?>, this)" class="follow-post-btn flex-shrink-0 px-3.5 py-1 rounded-full text-[11px] font-semibold hover:opacity-90 transition-all" style="<?= $postIsFollowing ? 'background: #1e1e2a; color: #a1a1aa;' : 'background: linear-gradient(135deg, #834ae5, #6b21a8); color: #ffffff;' ?>" data-following="<?= $postIsFollowing ? '1' : '0' ?>">
+   503→                            <span class="follow-label"><?= $postIsFollowing ? 'Following' : 'Follow' ?></span>
+   504→                        </button>
+   505→                        <button class="p-1 rounded-full hover:bg-[#1e1e2a] transition-colors">
+   506→                            <span class="material-icons-round text-zinc-500 text-[18px]">more_horiz</span>
+   507→                        </button>
+   508→                    </div>
+   509→                    <!-- Post Content -->
+   510→                    <p class="text-zinc-200 text-[13px] leading-relaxed"><?= htmlspecialchars($post['content']) ?></p>
+   511→                </div>
+   512→                <!-- Post Image -->
+   513→                <?php if (!empty($post['image_url'])): ?>
+   514→                <img src="<?= $post['image_url'] ?>" alt="Post" class="w-full max-h-[400px] object-cover">
+   515→                <?php endif; ?>
+   516→                <!-- Post Actions -->
+   517→                <div class="px-3.5 py-2.5 flex items-center justify-between">
+   518→                    <button onclick="likePost(<?= $post['id'] ?>, this)" class="action-btn flex items-center gap-1 text-zinc-400 hover:text-red-400">
+   519→                        <span class="material-icons-round text-[20px]">favorite_border</span>
+   520→                        <span class="text-[11px]"><?= formatCount($post['likes']) ?></span>
+   521→                    </button>
+   522→                    <button onclick="commentOnPost(<?= $post['id'] ?>)" class="action-btn flex items-center gap-1 text-zinc-400 hover:text-purple-400">
+   523→                        <span class="material-icons-round text-[20px]">chat_bubble_outline</span>
+   524→                        <span class="text-[11px]"><?= formatCount($post['comments_count']) ?></span>
+   525→                    </button>
+   526→                    <button onclick="sharePost(<?= $post['id'] ?>)" class="action-btn flex items-center gap-1 text-zinc-400 hover:text-green-400">
+   527→                        <span class="material-icons-round text-[20px]">share</span>
+   528→                        <span class="text-[11px]"><?= formatCount($post['shares']) ?></span>
+   529→                    </button>
+   530→                    <button onclick="tipPost(<?= $post['id'] ?>)" class="action-btn flex items-center gap-1 text-zinc-400 hover:text-amber-400">
+   531→                        <span class="material-icons-round text-[20px]">monetization_on</span>
+   532→                    </button>
+   533→                    <button onclick="bookmarkPost(<?= $post['id'] ?>, this)" class="action-btn text-zinc-400 hover:text-purple-400">
+   534→                        <span class="material-icons-round text-[20px]">bookmark_border</span>
+   535→                    </button>
+   536→                </div>
+   537→            </article>
+   538→            <?php endforeach; ?>
+   539→        </div>
+   540→    </div>
+   541→
+   542→    <!-- ===== TRENDING VIDEOS ===== -->
+   543→    <div class="px-4 py-3 border-t border-[#14141c]/60">
+   544→        <div class="flex items-center justify-between mb-3">
+   545→            <div class="flex items-center gap-2">
+   546→                <span class="material-icons-round text-[18px]" style="color: #834ae5;">play_circle</span>
+   547→                <h2 class="text-white text-sm font-bold">Trending Videos</h2>
+   548→            </div>
+   549→            <a href="/videos" class="text-[11px] font-semibold flex items-center gap-0.5" style="color: #834ae5;">
+   550→                See all <span class="material-icons-round text-sm">chevron_right</span>
+   551→            </a>
+   552→        </div>
+   553→        <div class="space-y-3">
+   554→            <?php foreach ($trendingVideos as $video): ?>
+   555→            <a href="/videos/<?= $video['id'] ?>" class="flex gap-3 group">
+   556→                <div class="relative flex-shrink-0 w-[140px] rounded-xl overflow-hidden">
+   557→                    <img src="<?= $video['thumbnail'] ?>" alt="<?= $video['title'] ?>" class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300">
+   558→                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+   559→                        <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #834ae5, #4f09f5);">
+   560→                            <span class="material-icons-round text-white text-sm">play_arrow</span>
+   561→                        </div>
+   562→                    </div>
+   563→                    <div class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/80 text-white text-[9px] font-medium">
+   564→                        <?= formatDuration($video['duration'] ?? 0) ?>
+   565→                    </div>
+   566→                </div>
+   567→                <div class="flex-1 min-w-0 py-0.5">
+   568→                    <h3 class="text-white text-[13px] font-semibold line-clamp-2 leading-snug"><?= $video['title'] ?></h3>
+   569→                    <div class="flex items-center gap-1 mt-1">
+   570→                        <span class="text-zinc-500 text-[11px]"><?= $video['creator_name'] ?? '' ?></span>
+   571→                        <?php if (!empty($video['is_verified'])): ?>
+   572→                        <span class="material-icons-round text-[11px]" style="color: #834ae5;">verified</span>
+   573→                        <?php endif; ?>
+   574→                    </div>
+   575→                    <span class="text-zinc-600 text-[11px]"><?= formatCount($video['views']) ?> views ¡¤ <?= timeAgo($video['created_at'] ?? '') ?></span>
+   576→                </div>
+   577→            </a>
+   578→            <?php endforeach; ?>
+   579→        </div>
+   580→    </div>
+   581→
+   582→    <!-- ===== CREATORS TO FOLLOW ===== -->
+   583→    <div class="px-4 py-3 border-t border-[#14141c]/60">
+   584→        <div class="flex items-center justify-between mb-3">
+   585→            <div class="flex items-center gap-2">
+   586→                <span class="material-icons-round text-[18px]" style="color: #834ae5;">group</span>
+   587→                <h2 class="text-white text-sm font-bold">Suggested Creators</h2>
+   588→            </div>
+   589→            <a href="/creators" class="text-[11px] font-semibold" style="color: #834ae5;">See all</a>
+   590→        </div>
+   591→        <div class="flex gap-3 overflow-x-auto scrollbar-hide scroll-snap-x">
+   592→            <?php foreach ($topCreators as $creator): ?>
+   593→            <div class="flex-shrink-0 w-[140px] bg-[#14141c] rounded-xl p-3 text-center border border-[#1e1e2a] hover:border-[#834ae5]/30 transition-all hover:shadow-lg hover:shadow-purple-900/10">
+   594→                <div class="relative w-14 h-14 mx-auto mb-2">
+   595→                    <div class="story-ring" style="padding: 2px;">
+   596→                        <img src="<?= $creator['avatar'] ?>" alt="<?= $creator['name'] ?>" class="w-full h-full rounded-full object-cover">
+   597→                    </div>
+   598→                    <?php if (!empty($creator['is_verified'])): ?>
+   599→                    <span class="absolute -bottom-0.5 -right-0.5 material-icons-round text-sm rounded-full" style="color: #834ae5;">verified</span>
+   600→                    <?php endif; ?>
+   601→                </div>
+   602→                <h3 class="text-white text-xs font-semibold truncate"><?= $creator['name'] ?></h3>
+   603→                <p class="text-zinc-500 text-[10px]"><?= formatCount($creator['follower_count'] ?? 0) ?> followers</p>
+   604→                <?php $isFollowing = !empty($creator['is_following']); ?>
+   605→                <button onclick="followCreator(<?= $creator['id'] ?? 0 ?>, this)"
+   606→                        class="mt-2 w-full py-1.5 rounded-lg text-[11px] font-semibold hover:opacity-90 transition-all"
+   607→                        style="<?= $isFollowing ? 'background: #1e1e2a; color: #a1a1aa;' : 'background: linear-gradient(135deg, #834ae5, #6b21a8); color: #ffffff;' ?>"
+   608→                        data-following="<?= $isFollowing ? '1' : '0' ?>"><?= $isFollowing ? 'Following' : 'Follow' ?></button>
+   609→            </div>
+   610→            <?php endforeach; ?>
+   611→        </div>
+   612→    </div>
+   613→
+   614→    <!-- Bottom spacer -->
+   615→    <div class="h-4"></div>
+   616→</div>
+   617→
+   618→<script>
+   619→/* ==================================================================
+   620→   UTILITIES
+   621→   ================================================================== */
+   622→function formatCount(num) {
+   623→    num = parseInt(num) || 0;
+   624→    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+   625→    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+   626→    return num.toString();
+   627→}
+   628→
+   629→function formatDuration(secs) {
+   630→    secs = parseInt(secs) || 0;
+   631→    const h = Math.floor(secs / 3600);
+   632→    const m = Math.floor((secs % 3600) / 60);
+   633→    const s = secs % 60;
+   634→    if (h > 0) return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+   635→    return m + ':' + String(s).padStart(2, '0');
+   636→}
+   637→
+   638→function timeAgo(dateStr) {
+   639→    if (!dateStr) return '';
+   640→    const now = new Date();
+   641→    const date = new Date(dateStr.replace(/-/g, '/'));
+   642→    const diff = Math.floor((now - date) / 1000);
+   643→    if (diff < 60) return 'just now';
+   644→    if (diff < 3600) return Math.floor(diff / 60) + 'm';
+   645→    if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+   646→    if (diff < 604800) return Math.floor(diff / 86400) + 'd';
+   647→    if (diff < 2592000) return Math.floor(diff / 604800) + 'w';
+   648→    return Math.floor(diff / 2592000) + 'mo';
+   649→}
+   650→
+   651→/**
+   652→ * Reusable AJAX helper – POSTs JSON and returns parsed response.
+   653→ * Shows toast on auth errors.
+   654→ */
+   655→async function apiPost(url, body = {}) {
+   656→    const res = await fetch(url, {
+   657→        method: 'POST',
+   658→        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+   659→        body: JSON.stringify(body),
+   660→    });
+   661→    const data = await res.json();
+   662→    if (res.status === 401) showToast('Please login first');
+   663→    return data;
+   664→}
+   665→
+   666→/* ==================================================================
+   667→   TOAST NOTIFICATIONS
+   668→   ================================================================== */
+   669→function showToast(msg, isError = false) {
+   670→    const existing = document.querySelector('.toast-msg');
+   671→    if (existing) existing.remove();
+   672→    const div = document.createElement('div');
+   673→    div.className = 'toast-msg fixed top-16 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-white text-sm font-medium z-[200]';
+   674→    div.style.cssText = isError
+   675→        ? 'background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 4px 20px rgba(239,68,68,0.4);'
+   676→        : 'background: linear-gradient(135deg, #834ae5, #6b21a8); box-shadow: 0 4px 20px rgba(131,74,229,0.4);';
+   677→    div.textContent = msg;
+   678→    document.body.appendChild(div);
+   679→    setTimeout(() => { div.style.opacity = '0'; div.style.transition = 'opacity 0.3s'; setTimeout(() => div.remove(), 300); }, 2000);
+   680→}
+   681→
+   682→/* ==================================================================
+   683→   LIKE POST  –  toggle via /posts/{id}/like
+   684→   Uses the likes table to prevent double-likes.
+   685→   ================================================================== */
+   686→function likePost(id, btn) {
+   687→    const icon = btn.querySelector('.material-icons-round');
+   688→    const countEl = btn.querySelector('span:last-child');
+   689→
+   690→    // Optimistic UI
+   691→    const wasLiked = icon.textContent === 'favorite';
+   692→    let currentCount = parseInt(countEl.textContent.replace(/[^0-9]/g, '')) || 0;
+   693→
+   694→    if (wasLiked) {
+   695→        icon.textContent = 'favorite_border';
+   696→        icon.classList.remove('text-red-400');
+   697→        icon.classList.add('text-zinc-400');
+   698→        btn.classList.remove('text-red-400');
+   699→        btn.classList.add('text-zinc-400');
+   700→        countEl.textContent = formatCount(currentCount - 1);
+   701→    } else {
+   702→        icon.textContent = 'favorite';
+   703→        icon.classList.add('text-red-400');
+   704→        icon.classList.remove('text-zinc-400');
+   705→        btn.classList.add('text-red-400');
+   706→        btn.classList.remove('text-zinc-400');
+   707→        countEl.textContent = formatCount(currentCount + 1);
+   708→    }
+   709→
+   710→    apiPost('/posts/' + id + '/like').then(data => {
+   711→        if (data.error) {
+   712→            // Revert on error
+   713→            icon.textContent = wasLiked ? 'favorite' : 'favorite_border';
+   714→            if (wasLiked) {
+   715→                icon.classList.add('text-red-400');
+   716→                icon.classList.remove('text-zinc-400');
+   717→            } else {
+   718→                icon.classList.remove('text-red-400');
+   719→                icon.classList.add('text-zinc-400');
+   720→            }
+   721→            countEl.textContent = formatCount(currentCount);
+   722→            showToast(data.error, true);
+   723→            return;
+   724→        }
+   725→        // Sync real count from server
+   726→        if (data.likes !== undefined) {
+   727→            countEl.textContent = formatCount(data.likes);
+   728→        }
+   729→    }).catch(() => showToast('Network error', true));
+   730→}
+   731→
+   732→/* ==================================================================
+   733→   COMMENT ON POST  –  POST /posts/{id}/comment
+   734→   Uses a custom inline modal instead of browser prompt().
+   735→   ================================================================== */
+   736→function commentOnPost(id) {
+   737→    // Remove existing modal
+   738→    const old = document.getElementById('commentModal');
+   739→    if (old) { old.remove(); return; }
+   740→
+   741→    const modal = document.createElement('div');
+   742→    modal.id = 'commentModal';
+   743→    modal.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);';
+   744→    modal.innerHTML = `
+   745→        <div style="background:#14141c;border:1px solid #1e1e2a;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:20px 20px 28px;animation:slideUp .25s ease;">
+   746→            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+   747→                <h3 style="color:#fff;font-size:15px;font-weight:700;">Comment</h3>
+   748→                <button onclick="document.getElementById('commentModal').remove()" style="color:#71717a;background:none;border:none;cursor:pointer;font-size:22px;">&times;</button>
+   749→            </div>
+   750→            <textarea id="commentInput" rows="3" placeholder="Write a comment..." style="width:100%;background:#09090f;border:1px solid #1e1e2a;border-radius:12px;padding:12px;color:#fff;font-size:14px;resize:none;outline:none;font-family:inherit;"></textarea>
+   751→            <button id="commentSubmitBtn" onclick="submitComment(${id})" style="margin-top:10px;width:100%;padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#834ae5,#6b21a8);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Post Comment</button>
+   752→        </div>
+   753→        <style>@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}</style>
+   754→    `;
+   755→    document.body.appendChild(modal);
+   756→    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+   757→    setTimeout(() => document.getElementById('commentInput')?.focus(), 100);
+   758→}
+   759→
+   760→async function submitComment(postId) {
+   761→    const input = document.getElementById('commentInput');
+   762→    const btn = document.getElementById('commentSubmitBtn');
+   763→    const body = input.value.trim();
+   764→    if (!body) { showToast('Write something first', true); return; }
+   765→
+   766→    btn.textContent = 'Posting...';
+   767→    btn.disabled = true;
+   768→
+   769→    try {
+   770→        const data = await apiPost('/posts/' + postId + '/comment', { body });
+   771→        if (data.error) {
+   772→            showToast(data.error, true);
+   773→            btn.textContent = 'Post Comment';
+   774→            btn.disabled = false;
+   775→            return;
+   776→        }
+   777→        document.getElementById('commentModal').remove();
+   778→
+   779→        // Update comment count in the UI
+   780→        const postCard = document.querySelector(`[onclick="commentOnPost(${postId})"]`)?.closest('article')?.closest('div')?.closest('div')?.closest('div');
+   781→        if (postCard) {
+   782→            const commentBtn = postCard.querySelector('[onclick*="commentOnPost"]');
+   783→            if (commentBtn) {
+   784→                const countEl = commentBtn.querySelector('span:last-child');
+   785→                if (countEl && data.comments_count !== undefined) {
+   786→                    countEl.textContent = formatCount(data.comments_count);
+   787→                }
+   788→            }
+   789→        }
+   790→        showToast(data.message || 'Comment added!');
+   791→    } catch {
+   792→        showToast('Failed to comment', true);
+   793→        btn.textContent = 'Post Comment';
+   794→        btn.disabled = false;
+   795→    }
+   796→}
+   797→
+   798→/* ==================================================================
+   799→   SHARE POST  –  POST /posts/{id}/share  +  native share / clipboard
+   800→   ================================================================== */
+   801→async function sharePost(id) {
+   802→    // Record the share in the backend
+   803→    apiPost('/posts/' + id + '/share').catch(() => {});
+   804→
+   805→    // Native share or clipboard
+   806→    if (navigator.share) {
+   807→        try { await navigator.share({ title: 'Globiim Post', url: '/posts/' + id }); } catch {}
+   808→    } else {
+   809→        try {
+   810→            await navigator.clipboard.writeText(window.location.origin + '/posts/' + id);
+   811→            showToast('Link copied to clipboard!');
+   812→        } catch {
+   813→            showToast('Could not copy link', true);
+   814→        }
+   815→    }
+   816→}
+   817→
+   818→/* ==================================================================
+   819→   TIP POST  –  POST /tip/post/{id}
+   820→   Opens a custom amount picker instead of browser prompt().
+   821→   ================================================================== */
+   822→function tipPost(id) {
+   823→    const old = document.getElementById('tipModal');
+   824→    if (old) { old.remove(); return; }
+   825→
+   826→    const modal = document.createElement('div');
+   827→    modal.id = 'tipModal';
+   828→    modal.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);';
+   829→    modal.innerHTML = `
+   830→        <div style="background:#14141c;border:1px solid #1e1e2a;border-radius:20px;width:90%;max-width:360px;padding:24px;animation:scaleIn .2s ease;">
+   831→            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+   832→                <h3 style="color:#fff;font-size:15px;font-weight:700;">Send a Tip</h3>
+   833→                <button onclick="document.getElementById('tipModal').remove()" style="color:#71717a;background:none;border:none;cursor:pointer;font-size:22px;">&times;</button>
+   834→            </div>
+   835→            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" id="tipAmounts">
+   836→                <button onclick="setTipAmount(50)" class="tip-amt" style="flex:1;min-width:60px;padding:10px;border-radius:12px;border:1px solid #1e1e2a;background:#09090f;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">KES 50</button>
+   837→                <button onclick="setTipAmount(100)" class="tip-amt" style="flex:1;min-width:60px;padding:10px;border-radius:12px;border:1px solid #1e1e2a;background:#09090f;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">KES 100</button>
+   838→                <button onclick="setTipAmount(500)" class="tip-amt" style="flex:1;min-width:60px;padding:10px;border-radius:12px;border:1px solid #1e1e2a;background:#09090f;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">KES 500</button>
+   839→                <button onclick="setTipAmount(1000)" class="tip-amt" style="flex:1;min-width:60px;padding:10px;border-radius:12px;border:1px solid #1e1e2a;background:#09090f;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">KES 1K</button>
+   840→            </div>
+   841→            <input type="number" id="tipCustomAmount" placeholder="Or enter custom amount" min="1" style="width:100%;background:#09090f;border:1px solid #1e1e2a;border-radius:12px;padding:11px 14px;color:#fff;font-size:14px;outline:none;margin-bottom:12px;font-family:inherit;">
+   842→            <button id="tipSubmitBtn" onclick="submitTip(${id})" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Send Tip</button>
+   843→            <style>@keyframes scaleIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}</style>
+   844→        </div>
+   845→    `;
+   846→    document.body.appendChild(modal);
+   847→    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+   848→}
+   849→
+   850→function setTipAmount(amt) {
+   851→    document.getElementById('tipCustomAmount').value = amt;
+   852→    document.querySelectorAll('.tip-amt').forEach(b => {
+   853→        b.style.borderColor = b.textContent.trim() === 'KES ' + (amt >= 1000 ? amt/1000 + 'K' : amt) ? '#f59e0b' : '#1e1e2a';
+   854→        b.style.background = b.textContent.trim() === 'KES ' + (amt >= 1000 ? amt/1000 + 'K' : amt) ? 'rgba(245,158,11,0.1)' : '#09090f';
+   855→    });
+   856→}
+   857→
+   858→async function submitTip(id) {
+   859→    const input = document.getElementById('tipCustomAmount');
+   860→    const btn = document.getElementById('tipSubmitBtn');
+   861→    const amount = parseFloat(input.value);
+   862→
+   863→    if (!amount || amount <= 0) { showToast('Enter a valid amount', true); return; }
+   864→
+   865→    btn.textContent = 'Sending...';
+   866→    btn.disabled = true;
+   867→
+   868→    try {
+   869→        const data = await apiPost('/tip/post/' + id, { amount });
+   870→        if (data.error) {
+   871→            showToast(data.error, true);
+   872→            btn.textContent = 'Send Tip';
+   873→            btn.disabled = false;
+   874→            return;
+   875→        }
+   876→        document.getElementById('tipModal').remove();
+   877→        showToast(data.message || 'Tip sent! KES ' + amount.toLocaleString());
+   878→    } catch {
+   879→        showToast('Failed to send tip', true);
+   880→        btn.textContent = 'Send Tip';
+   881→        btn.disabled = false;
+   882→    }
+   883→}
+   884→
+   885→/* ==================================================================
+   886→   BOOKMARK POST  –  POST /bookmark/post/{id}
+   887→   Toggle save/unsave with icon + color change.
+   888→   ================================================================== */
+   889→async function bookmarkPost(id, btn) {
+   890→    const icon = btn.querySelector('.material-icons-round');
+   891→    const wasBookmarked = icon.textContent === 'bookmark';
+   892→
+   893→    // Optimistic UI
+   894→    if (wasBookmarked) {
+   895→        icon.textContent = 'bookmark_border';
+   896→        icon.classList.remove('text-purple-400');
+   897→    } else {
+   898→        icon.textContent = 'bookmark';
+   899→        icon.classList.add('text-purple-400');
+   900→    }
+   901→
+   902→    try {
+   903→        const data = await apiPost('/bookmark/post/' + id);
+   904→        if (data.error) {
+   905→            // Revert
+   906→            icon.textContent = wasBookmarked ? 'bookmark' : 'bookmark_border';
+   907→            if (wasBookmarked) icon.classList.add('text-purple-400');
+   908→            else icon.classList.remove('text-purple-400');
+   909→            showToast(data.error, true);
+   910→            return;
+   911→        }
+   912→        showToast(data.message || (data.bookmarked ? 'Saved!' : 'Removed from saved'));
+   913→    } catch {
+   914→        // Revert
+   915→        icon.textContent = wasBookmarked ? 'bookmark' : 'bookmark_border';
+   916→        if (wasBookmarked) icon.classList.add('text-purple-400');
+   917→        else icon.classList.remove('text-purple-400');
+   918→        showToast('Network error', true);
+   919→    }
+   920→}
+   921→
+   922→/* ==================================================================
+   923→   FOLLOW CREATOR (Suggested Creators section)
+   924→   POST /follow/{id}
+   925→   ================================================================== */
+   926→function followCreator(id, btn) {
+   927→    const wasFollowing = btn.dataset.following === '1';
+   928→
+   929→    // Optimistic UI
+   930→    if (wasFollowing) {
+   931→        btn.textContent = 'Follow';
+   932→        btn.style.background = 'linear-gradient(135deg, #834ae5, #6b21a8)';
+   933→        btn.style.color = '#ffffff';
+   934→        btn.dataset.following = '0';
+   935→    } else {
+   936→        btn.textContent = 'Following';
+   937→        btn.style.background = '#1e1e2a';
+   938→        btn.style.color = '#a1a1aa';
+   939→        btn.dataset.following = '1';
+   940→    }
+   941→
+   942→    apiPost('/follow/' + id).then(data => {
+   943→        if (data.error) {
+   944→            // Revert
+   945→            if (wasFollowing) {
+   946→                btn.textContent = 'Following';
+   947→                btn.style.background = '#1e1e2a';
+   948→                btn.style.color = '#a1a1aa';
+   949→                btn.dataset.following = '1';
+   950→            } else {
+   951→                btn.textContent = 'Follow';
+   952→                btn.style.background = 'linear-gradient(135deg, #834ae5, #6b21a8)';
+   953→                btn.style.color = '#ffffff';
+   954→                btn.dataset.following = '0';
+   955→            }
+   956→            showToast(data.error, true);
+   957→            return;
+   958→        }
+   959→        showToast(data.message || (data.following ? 'Following!' : 'Unfollowed'));
+   960→    }).catch(() => showToast('Network error', true));
+   961→}
+   962→
+   963→/* ==================================================================
+   964→   FOLLOW POST CREATOR (Post card follow button)
+   965→   POST /follow/{id}
+   966→   ================================================================== */
+   967→function followPostCreator(id, btn) {
+   968→    const label = btn.querySelector('.follow-label');
+   969→    const wasFollowing = btn.dataset.following === '1';
+   970→
+   971→    // Optimistic UI
+   972→    if (wasFollowing) {
+   973→        btn.dataset.following = '0';
+   974→        label.textContent = 'Follow';
+   975→        btn.style.background = 'linear-gradient(135deg, #834ae5, #6b21a8)';
+   976→        btn.style.color = '#ffffff';
+   977→        btn.style.border = 'none';
+   978→    } else {
+   979→        btn.dataset.following = '1';
+   980→        label.textContent = 'Following';
+   981→        btn.style.background = '#1e1e2a';
+   982→        btn.style.color = '#a1a1aa';
+   983→        btn.style.border = '1px solid #3f3f46';
+   984→    }
+   985→
+   986→    apiPost('/follow/' + id).then(data => {
+   987→        if (data.error) {
+   988→            // Revert
+   989→            if (wasFollowing) {
+   990→                btn.dataset.following = '1';
+   991→                label.textContent = 'Following';
+   992→                btn.style.background = '#1e1e2a';
+   993→                btn.style.color = '#a1a1aa';
+   994→                btn.style.border = '1px solid #3f3f46';
+   995→            } else {
+   996→                btn.dataset.following = '0';
+   997→                label.textContent = 'Follow';
+   998→                btn.style.background = 'linear-gradient(135deg, #834ae5, #6b21a8)';
+   999→                btn.style.color = '#ffffff';
+  1000→                btn.style.border = 'none';
+  1001→            }
+  1002→            showToast(data.error, true);
+  1003→            return;
+  1004→        }
+  1005→        showToast(data.message || (data.following ? 'Following!' : 'Unfollowed'));
+  1006→    }).catch(() => showToast('Network error', true));
+  1007→}
+  1008→
+  1009→/* ==================================================================
+  1010→   CATEGORY FILTER
+  1011→   ================================================================== */
+  1012→function selectCategory(btn) {
+  1013→    document.querySelectorAll('.category-chip').forEach(b => b.classList.remove('active'));
+  1014→    btn.classList.add('active');
+  1015→}
+  1016→
+  1017→// ===== SMART SPOTLIGHT CAROUSEL =====
+  1018→(function() {
+  1019→    const track = document.getElementById('spotlightTrack');
+  1020→    const dotsContainer = document.getElementById('spotlightDots');
+  1021→    if (!track || !dotsContainer) return;
+  1022→
+  1023→    const dots = dotsContainer.querySelectorAll('.spotlight-dot');
+  1024→    let currentSlide = 0;
+  1025→    let totalSlides = dots.length;
+  1026→    let autoScrollInterval;
+  1027→    let isPaused = false;
+  1028→    let touchStartX = 0;
+  1029→    let touchEndX = 0;
+  1030→
+  1031→    function getCardWidth() {
+  1032→        const card = track.querySelector('.spotlight-card');
+  1033→        if (!card) return 0;
+  1034→        const style = getComputedStyle(card);
+  1035→        return card.offsetWidth + parseFloat(style.marginLeft || 0) + 12; // gap
+  1036→    }
+  1037→
+  1038→    function updateDots(index) {
+  1039→        dots.forEach((dot, i) => {
+  1040→            dot.classList.toggle('active', i === index);
+  1041→        });
+  1042→    }
+  1043→
+  1044→    function goToSlide(index) {
+  1045→        if (index < 0) index = totalSlides - 1;
+  1046→        if (index >= totalSlides) index = 0;
+  1047→        currentSlide = index;
+  1048→
+  1049→        const cardWidth = getCardWidth();
+  1050→        const scrollPos = cardWidth * index;
+  1051→        track.scrollTo({ left: scrollPos, behavior: 'smooth' });
+  1052→        updateDots(index);
+  1053→
+  1054→        // Reset auto-scroll timer
+  1055→        resetAutoScroll();
+  1056→    }
+  1057→
+  1058→    function nextSlide() {
+  1059→        goToSlide(currentSlide + 1);
+  1060→    }
+  1061→
+  1062→    function startAutoScroll() {
+  1063→        autoScrollInterval = setInterval(() => {
+  1064→            if (!isPaused) nextSlide();
+  1065→        }, 4000);
+  1066→    }
+  1067→
+  1068→    function resetAutoScroll() {
+  1069→        clearInterval(autoScrollInterval);
+  1070→        startAutoScroll();
+  1071→    }
+  1072→
+  1073→    // Detect scroll position to sync dots
+  1074→    let scrollTimeout;
+  1075→    track.addEventListener('scroll', () => {
+  1076→        clearTimeout(scrollTimeout);
+  1077→        scrollTimeout = setTimeout(() => {
+  1078→            const cardWidth = getCardWidth();
+  1079→            if (cardWidth <= 0) return;
+  1080→            const newIndex = Math.round(track.scrollLeft / cardWidth);
+  1081→            if (newIndex !== currentSlide && newIndex >= 0 && newIndex < totalSlides) {
+  1082→                currentSlide = newIndex;
+  1083→                updateDots(currentSlide);
+  1084→                resetAutoScroll();
+  1085→            }
+  1086→        }, 100);
+  1087→    });
+  1088→
+  1089→    // Pause on hover/touch
+  1090→    track.addEventListener('mouseenter', () => { isPaused = true; });
+  1091→    track.addEventListener('mouseleave', () => { isPaused = false; });
+  1092→    track.addEventListener('touchstart', (e) => {
+  1093→        isPaused = true;
+  1094→        touchStartX = e.changedTouches[0].screenX;
+  1095→    }, { passive: true });
+  1096→    track.addEventListener('touchend', (e) => {
+  1097→        touchEndX = e.changedTouches[0].screenX;
+  1098→        const diff = touchStartX - touchEndX;
+  1099→        if (Math.abs(diff) < 10) return;
+  1100→        // Don't auto-advance if user swiped
+  1101→        resetAutoScroll();
+  1102→        setTimeout(() => { isPaused = false; }, 2000);
+  1103→    }, { passive: true });
+  1104→
+  1105→    // Make goToSlide available globally for dot clicks
+  1106→    window.goToSlide = goToSlide;
+  1107→
+  1108→    // Start auto-scroll
+  1109→    startAutoScroll();
+  1110→})();
+  1111→</script>
+  1112→
+  1113→<?php $content = ob_get_clean(); ?>
+  1114→<?php require __DIR__ . '/../layouts/app.php'; ?>
+  1115→

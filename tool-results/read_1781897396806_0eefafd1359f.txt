@@ -1,0 +1,793 @@
+     1→<?php $activeTab = 'videos'; $title = ($data['video']['title'] ?? 'Video') . ' - Globiim'; $hideTopNav = true; $hideBottomNav = true; ?>
+     2→<?php
+     3→$video = $data['video'] ?? [];
+     4→$comments = $data['comments'] ?? [];
+     5→$creatorName = $video['creator_name'] ?? $video['username'] ?? 'Creator';
+     6→$creatorAvatar = $video['creator_avatar'] ?? 'https://placehold.co/48x48/3f3f46/ffffff?text=U';
+     7→$isVerified = !empty($video['is_verified']);
+     8→$videoUrl = $video['video_url'] ?? '';
+     9→$thumbnail = $video['thumbnail'] ?? 'https://placehold.co/800x450/3f3f46/ffffff?text=Video';
+    10→$desc = $video['description'] ?? '';
+    11→$tags = $video['tags'] ?? [];
+    12→if (is_string($tags)) $tags = json_decode($tags, true) ?: [];
+    13→?>
+    14→<?php ob_start(); ?>
+    15→<style>
+    16→    * { box-sizing: border-box; }
+    17→
+    18→    /* Video player */
+    19→    .video-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
+    20→    .video-container video { width: 100%; height: 100%; object-fit: cover; }
+    21→    .video-container img { width: 100%; height: 100%; object-fit: cover; }
+    22→
+    23→    /* Play overlay */
+    24→    .play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 5; cursor: pointer; }
+    25→    .play-overlay:hover .play-btn { transform: scale(1.1); }
+    26→    .play-btn { width: 64px; height: 64px; border-radius: 50%; background: rgba(131,74,229,0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+    27→    .play-btn:active { transform: scale(0.9); }
+    28→
+    29→    /* Progress bar */
+    30→    .progress-track { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: rgba(255,255,255,0.15); z-index: 10; cursor: pointer; }
+    31→    .progress-fill { height: 100%; background: linear-gradient(90deg, #834ae5, #c084fc); width: 0%; transition: width 0.1s linear; position: relative; }
+    32→    .progress-fill::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%; background: #c084fc; box-shadow: 0 0 6px rgba(131,74,229,0.5); opacity: 0; transition: opacity 0.2s; }
+    33→    .progress-track:hover .progress-fill::after { opacity: 1; }
+    34→
+    35→    /* Quality badge */
+    36→    .quality-badge { position: absolute; top: 12px; left: 12px; z-index: 8; }
+    37→
+    38→    /* Action button row */
+    39→    .action-btn { transition: all 0.2s ease; }
+    40→    .action-btn:active { transform: scale(0.92); }
+    41→
+    42→    /* Description expand */
+    43→    .desc-text { max-height: 40px; overflow: hidden; transition: max-height 0.3s ease; }
+    44→    .desc-text.expanded { max-height: 500px; }
+    45→
+    46→    /* Comments */
+    47→    .comment-item { transition: background 0.15s ease; }
+    48→    .comment-item:hover { background: rgba(255,255,255,0.02); }
+    49→
+    50→    /* Sort dropdown */
+    51→    .sort-dropdown { transition: all 0.2s ease; }
+    52→
+    53→    /* Slide animation */
+    54→    @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+    55→    .slide-up { animation: slideUp 0.25s ease-out forwards; }
+    56→
+    57→    /* Shimmer */
+    58→    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    59→    .shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.04) 50%, transparent 75%); background-size: 200% 100%; animation: shimmer 3s infinite; }
+    60→
+    61→    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    62→    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    63→</style>
+    64→
+    65→<div class="max-w-lg mx-auto pb-20" style="background: #090c15;">
+    66→
+    67→    <!-- ===== BACK LINK ===== -->
+    68→    <div class="px-4 pt-3 pb-2 flex items-center justify-between">
+    69→        <a href="/videos" class="w-9 h-9 rounded-full bg-[#14141c] border border-[#1e1e2a] flex items-center justify-center hover:bg-[#1e1e2a] transition-colors">
+    70→            <span class="material-icons-round text-zinc-300 text-lg">arrow_back</span>
+    71→        </a>
+    72→        <h1 class="text-white text-sm font-bold truncate max-w-[60%]"><?= htmlspecialchars(mb_substr($video['title'] ?? 'Video', 0, 40)) ?></h1>
+    73→        <button onclick="toggleVideoMenu()" class="w-9 h-9 rounded-full bg-[#14141c] border border-[#1e1e2a] flex items-center justify-center hover:bg-[#1e1e2a] transition-colors">
+    74→            <span class="material-icons-round text-zinc-300 text-lg">more_vert</span>
+    75→        </button>
+    76→    </div>
+    77→
+    78→    <!-- ===== VIDEO PLAYER ===== -->
+    79→    <div class="video-container rounded-b-2xl overflow-hidden" id="videoPlayerContainer">
+    80→        <?php if (!empty($videoUrl)): ?>
+    81→        <video id="videoPlayer" src="<?= htmlspecialchars($videoUrl) ?>" poster="<?= htmlspecialchars($thumbnail) ?>" playsinline preload="metadata"></video>
+    82→        <?php else: ?>
+    83→        <img src="<?= htmlspecialchars($thumbnail) ?>" alt="<?= htmlspecialchars($video['title'] ?? '') ?>">
+    84→        <?php endif; ?>
+    85→
+    86→        <!-- Play/Pause Overlay -->
+    87→        <div class="play-overlay" id="playOverlay" onclick="toggleVideoPlay()">
+    88→            <div class="play-btn" id="playBtn">
+    89→                <span class="material-icons-round text-white text-3xl">play_arrow</span>
+    90→            </div>
+    91→        </div>
+    92→
+    93→        <!-- Big tap indicator -->
+    94→        <div id="tapIndicator" class="hidden absolute inset-0 flex items-center justify-center z-[6] pointer-events-none">
+    95→            <div class="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center">
+    96→                <span class="material-icons-round text-white text-3xl" id="tapIcon">pause</span>
+    97→            </div>
+    98→        </div>
+    99→
+   100→        <!-- Quality Badge -->
+   101→        <div class="quality-badge">
+   102→            <button onclick="toggleQuality()" class="flex items-center gap-1 px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-white text-[11px] font-bold hover:bg-black/90 transition-colors">
+   103→                <span id="qualityText">1080p</span>
+   104→                <span class="material-icons-round text-[10px]">unfold_more</span>
+   105→            </button>
+   106→        </div>
+   107→
+   108→        <!-- Duration Badge -->
+   109→        <?php if (!empty($video['duration'])): ?>
+   110→        <div class="absolute bottom-12 right-3 z-[8] px-2 py-0.5 rounded bg-black/80 text-white text-[11px] font-medium" id="durationBadge">
+   111→            <?= formatDuration($video['duration']) ?>
+   112→        </div>
+   113→        <?php endif; ?>
+   114→
+   115→        <!-- Video Controls (shown when playing) -->
+   116→        <div class="absolute bottom-0 left-0 right-0 z-[9] p-2 hidden" id="videoControls">
+   117→            <div class="flex items-center gap-2 mb-1">
+   118→                <span class="text-white text-[11px] font-medium" id="currentTime">0:00</span>
+   119→                <div class="flex-1"></div>
+   120→                <button onclick="toggleFullscreen()" class="text-white hover:opacity-80 transition-opacity">
+   121→                    <span class="material-icons-round text-lg">fullscreen</span>
+   122→                </button>
+   123→            </div>
+   124→        </div>
+   125→
+   126→        <!-- Progress Bar -->
+   127→        <div class="progress-track" id="progressTrack" onclick="seekVideo(event)">
+   128→            <div class="progress-fill" id="progressFill"></div>
+   129→        </div>
+   130→    </div>
+   131→
+   132→    <!-- ===== VIDEO INFO ===== -->
+   133→    <div class="px-4 pt-3">
+   134→        <!-- Title -->
+   135→        <h1 class="text-white text-base font-bold leading-snug mb-1.5"><?= htmlspecialchars($video['title'] ?? '') ?></h1>
+   136→
+   137→        <!-- Views �� Time �� Tags -->
+   138→        <div class="flex items-center gap-1.5 flex-wrap mb-3">
+   139→            <span class="text-zinc-500 text-[11px]"><?= formatCount($video['views'] ?? 0) ?> views</span>
+   140→            <span class="text-zinc-600 text-[10px]">�6�1</span>
+   141→            <span class="text-zinc-500 text-[11px]"><?= timeAgo($video['created_at'] ?? '') ?></span>
+   142→            <?php if (!empty($tags) && is_array($tags)): ?>
+   143→            <?php foreach ($tags as $tag): ?>
+   144→            <span class="text-[11px] font-medium cursor-pointer hover:underline" style="color: #834ae5;">#<?= htmlspecialchars($tag) ?></span>
+   145→            <?php endforeach; ?>
+   146→            <?php endif; ?>
+   147→            <?php
+   148→            // Extract hashtags from description
+   149→            preg_match_all('/#(\w+)/', $desc, $hashMatches);
+   150→            if (!empty($hashMatches[0])):
+   151→                foreach (array_slice($hashMatches[0], 0, 5) as $htag):
+   152→            ?>
+   153→            <span class="text-[11px] font-medium cursor-pointer hover:underline" style="color: #834ae5;"><?= htmlspecialchars($htag) ?></span>
+   154→            <?php endforeach; endif; ?>
+   155→        </div>
+   156→
+   157→        <!-- ===== CREATOR INFO ===== -->
+   158→        <div class="flex items-center gap-2.5 mb-3 pb-3" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+   159→            <a href="/creator/<?= htmlspecialchars($video['username'] ?? 'u') ?>" class="flex items-center gap-2.5 flex-1 min-w-0">
+   160→                <div class="relative flex-shrink-0">
+   161→                    <div class="w-10 h-10 rounded-full overflow-hidden" style="box-shadow: 0 0 0 2px rgba(131,74,229,0.4);">
+   162→                        <img src="<?= htmlspecialchars($creatorAvatar) ?>" alt="<?= htmlspecialchars($creatorName) ?>" class="w-full h-full object-cover">
+   163→                    </div>
+   164→                    <?php if ($isVerified): ?>
+   165→                    <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#834ae5] rounded-full flex items-center justify-center">
+   166→                        <svg width="8" height="8" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+   167→                    </div>
+   168→                    <?php endif; ?>
+   169→                </div>
+   170→                <div class="min-w-0">
+   171→                    <div class="flex items-center gap-1">
+   172→                        <span class="text-white text-[13px] font-bold truncate"><?= htmlspecialchars($creatorName) ?></span>
+   173→                        <?php if ($isVerified): ?>
+   174→                        <svg width="13" height="13" viewBox="0 0 24 24" fill="#834ae5"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+   175→                        <?php endif; ?>
+   176→                    </div>
+   177→                    <span class="text-zinc-500 text-[10px]"><?= formatCount($video['subscribers'] ?? 0) ?> followers</span>
+   178→                </div>
+   179→            </a>
+   180→<?php $vidIsFollowing = !empty($video['is_following']); ?>
+   181→            <button onclick="toggleFollow(this, <?= $video['user_id'] ?? 0 ?>)" data-following="<?= $vidIsFollowing ? 'true' : 'false' ?>" class="flex items-center gap-1 px-4 py-1.5 rounded-full text-white text-[11px] font-bold flex-shrink-0 transition-all" style="<?= $vidIsFollowing ? 'background:#1e1e2a;color:#a1a1aa;' : 'background:linear-gradient(135deg,#834ae5,#6b21a8);' ?>">
+   182→                <?= $vidIsFollowing ? '<span class="material-icons-round text-[14px]">check</span> Following' : 'Follow <span class="material-icons-round text-[14px]">expand_more</span>' ?>
+   183→            </button>
+   184→        </div>
+   185→
+   186→        <!-- ===== ACTION BUTTONS ROW ===== -->
+   187→        <div class="flex items-center justify-between mb-3 py-1">
+   188→            <!-- Like -->
+   189→            <button onclick="toggleLike()" class="action-btn flex flex-col items-center gap-0.5" id="likeBtn">
+   190→                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[#14141c] border border-[#1e1e2a]">
+   191→                    <span class="material-icons-round text-zinc-300 text-lg" id="likeIcon">thumb_up</span>
+   192→                </div>
+   193→                <span class="text-zinc-400 text-[10px] font-semibold" id="likeCount"><?= formatCount($video['likes'] ?? 0) ?></span>
+   194→            </button>
+   195→            <!-- Dislike -->
+   196→            <button onclick="toggleDislike()" class="action-btn flex flex-col items-center gap-0.5" id="dislikeBtn">
+   197→                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[#14141c] border border-[#1e1e2a]">
+   198→                    <span class="material-icons-round text-zinc-300 text-lg" id="dislikeIcon">thumb_down</span>
+   199→                </div>
+   200→                <span class="text-zinc-400 text-[10px] font-semibold" id="dislikeCount"><?= formatCount($video['dislikes'] ?? 234) ?></span>
+   201→            </button>
+   202→            <!-- Gift -->
+   203→            <button onclick="openVideoGiftPanel(<?= $video['id'] ?? 0 ?>)" class="action-btn flex flex-col items-center gap-0.5">
+   204→                <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: rgba(131,74,229,0.12); border: 1px solid rgba(131,74,229,0.2);">
+   205→                    <span class="material-icons-round text-[#834ae5] text-lg">card_giftcard</span>
+   206→                </div>
+   207→                <span class="text-zinc-400 text-[10px] font-semibold">Gift</span>
+   208→            </button>
+   209→            <!-- Download -->
+   210→            <button onclick="downloadVideo()" class="action-btn flex flex-col items-center gap-0.5">
+   211→                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[#14141c] border border-[#1e1e2a]">
+   212→                    <span class="material-icons-round text-zinc-300 text-lg">download</span>
+   213→                </div>
+   214→                <span class="text-zinc-400 text-[10px] font-semibold">Download</span>
+   215→            </button>
+   216→            <!-- Save -->
+   217→            <button onclick="toggleSave(this)" class="action-btn flex flex-col items-center gap-0.5" id="saveBtn">
+   218→                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[#14141c] border border-[#1e1e2a]">
+   219→                    <span class="material-icons-round text-zinc-300 text-lg save-icon">bookmark_border</span>
+   220→                </div>
+   221→                <span class="text-zinc-400 text-[10px] font-semibold save-text">Save</span>
+   222→            </button>
+   223→            <!-- Share -->
+   224→            <button onclick="shareVideo(<?= $video['id'] ?? 0 ?>)" class="action-btn flex flex-col items-center gap-0.5">
+   225→                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-[#14141c] border border-[#1e1e2a]">
+   226→                    <span class="material-icons-round text-zinc-300 text-lg">share</span>
+   227→                </div>
+   228→                <span class="text-zinc-400 text-[10px] font-semibold">Share</span>
+   229→            </button>
+   230→        </div>
+   231→
+   232→        <!-- ===== DESCRIPTION ===== -->
+   233→        <?php if (!empty($desc)): ?>
+   234→        <div class="mb-4">
+   235→            <div class="bg-[#14141c] rounded-xl p-3 border border-[#1e1e2a]">
+   236→                <p class="desc-text text-zinc-300 text-[12px] leading-relaxed" id="descText"><?= htmlspecialchars($desc) ?></p>
+   237→                <button onclick="toggleDescription()" class="text-[11px] font-semibold mt-1" id="descToggle" style="color: #834ae5;">...more</button>
+   238→            </div>
+   239→        </div>
+   240→        <?php endif; ?>
+   241→
+   242→        <!-- ===== COMMENTS SECTION ===== -->
+   243→        <div class="mb-4">
+   244→            <!-- Comments Header -->
+   245→            <div class="flex items-center justify-between mb-3">
+   246→                <div class="flex items-center gap-2">
+   247→                    <span class="material-icons-round text-[18px]" style="color: #834ae5;">chat_bubble</span>
+   248→                    <h3 class="text-white text-sm font-bold">Comments</h3>
+   249→                    <span class="text-zinc-500 text-xs">(<?= count($comments) ?>)</span>
+   250→                </div>
+   251→                <button onclick="toggleSort()" class="flex items-center gap-1 text-zinc-400 text-[11px] font-medium hover:text-white transition-colors">
+   252→                    <span id="sortText">Top</span>
+   253→                    <span class="material-icons-round text-[14px]">unfold_more</span>
+   254→                </button>
+   255→            </div>
+   256→
+   257→            <!-- Comment Input -->
+   258→            <div class="flex items-center gap-2.5 mb-4">
+   259→                <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0" style="box-shadow: 0 0 0 2px rgba(131,74,229,0.3);">
+   260→                    <img src="https://placehold.co/32x32/6d28d9/ffffff?text=U" alt="You" class="w-full h-full object-cover">
+   261→                </div>
+   262→                <div class="flex-1 relative">
+   263→                    <input type="text" id="videoCommentInput" placeholder="Add a comment..." class="w-full bg-[#14141c] text-white px-4 py-2.5 rounded-full border border-[#1e1e2a] focus:border-[#834ae5] focus:outline-none text-[13px] placeholder:text-zinc-600 transition-all" onkeydown="if(event.key==='Enter')addVideoComment(<?= $video['id'] ?? 0 ?>)">
+   264→                </div>
+   265→                <button onclick="addVideoComment(<?= $video['id'] ?? 0 ?>)" class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 hover:opacity-90 transition-opacity" style="background: linear-gradient(135deg, #834ae5, #6b21a8);">
+   266→                    <span class="material-icons-round text-white text-lg">send</span>
+   267→                </button>
+   268→            </div>
+   269→
+   270→            <!-- Comments List -->
+   271→            <?php if (!empty($comments)): ?>
+   272→            <div class="space-y-3 max-h-[400px] overflow-y-auto scrollbar-hide" id="commentsList">
+   273→                <?php foreach ($comments as $idx => $comment): ?>
+   274→                <div class="comment-item flex gap-2.5 rounded-xl p-2 -mx-2">
+   275→                    <img src="<?= $comment['commenter_avatar'] ?? 'https://placehold.co/32x32/3f3f46/ffffff?text=U' ?>" alt="" class="w-8 h-8 rounded-full flex-shrink-0 mt-0.5">
+   276→                    <div class="flex-1 min-w-0">
+   277→                        <div class="flex items-center gap-1.5">
+   278→                            <span class="text-white text-[12px] font-semibold"><?= htmlspecialchars($comment['commenter_name'] ?? $comment['username'] ?? 'User') ?></span>
+   279→                            <span class="text-zinc-600 text-[9px]"><?= timeAgo($comment['created_at'] ?? '') ?></span>
+   280→                        </div>
+   281→                        <p class="text-zinc-300 text-[12px] leading-relaxed mt-0.5"><?= htmlspecialchars($comment['body'] ?? '') ?></p>
+   282→                        <div class="flex items-center gap-3 mt-1">
+   283→                            <button onclick="likeComment(this, <?= $idx ?>)" class="flex items-center gap-0.5 text-zinc-500 hover:text-[#834ae5] transition-colors">
+   284→                                <span class="material-icons-round text-[12px] comment-like-icon">favorite_border</span>
+   285→                                <span class="text-[10px] comment-like-count"><?= rand(2, 200) ?></span>
+   286→                            </button>
+   287→                            <button class="text-[10px] font-medium hover:text-[#834ae5] transition-colors" style="color: #834ae5;">Reply</button>
+   288→                            <button class="text-zinc-600 hover:text-zinc-400 transition-colors">
+   289→                                <span class="material-icons-round text-[14px]">more_horiz</span>
+   290→                            </button>
+   291→                        </div>
+   292→                    </div>
+   293→                </div>
+   294→                <?php endforeach; ?>
+   295→            </div>
+   296→            <?php else: ?>
+   297→            <div class="text-center py-8 bg-[#14141c] rounded-xl border border-[#1e1e2a]">
+   298→                <span class="material-icons-round text-zinc-600 text-3xl">chat_bubble_outline</span>
+   299→                <p class="text-zinc-500 text-xs mt-2">No comments yet. Be the first!</p>
+   300→            </div>
+   301→            <?php endif; ?>
+   302→        </div>
+   303→
+   304→        <!-- ===== SUGGESTED VIDEOS ===== -->
+   305→        <div class="mb-4">
+   306→            <div class="flex items-center justify-between mb-3">
+   307→                <div class="flex items-center gap-2">
+   308→                    <span class="material-icons-round text-[18px]" style="color: #834ae5;">play_circle</span>
+   309→                    <h3 class="text-white text-sm font-bold">Up Next</h3>
+   310→                </div>
+   311→                <a href="/videos" class="text-[11px] font-semibold flex items-center gap-0.5" style="color: #834ae5;">
+   312→                    See all <span class="material-icons-round text-sm">chevron_right</span>
+   313→                </a>
+   314→            </div>
+   315→            <div class="space-y-3">
+   316→                <?php for ($i = 0; $i < 3; $i++):
+   317→                    $suggested = [
+   318→                        ['title' => 'Top 10 Places to Visit in Kenya', 'creator' => 'Travel Diaries', 'views' => '98K', 'time' => '2d ago', 'duration' => '12:34', 'color' => '#0891b2'],
+   319→                        ['title' => 'How I Built a YouTube Studio', 'creator' => 'Creator Flow', 'views' => '76K', 'time' => '5d ago', 'duration' => '18:22', 'color' => '#7e22ce'],
+   320→                        ['title' => 'Best Camera for Content Creators 2024', 'creator' => 'Tech Gear', 'views' => '45K', 'time' => '1w ago', 'duration' => '15:07', 'color' => '#dc2626'],
+   321→                    ][$i]; ?>
+   322→                <a href="/videos" class="flex gap-3 group">
+   323→                    <div class="relative flex-shrink-0 w-[140px] rounded-xl overflow-hidden">
+   324→                        <div class="aspect-video flex items-center justify-center" style="background: linear-gradient(135deg, <?= $suggested['color'] ?>33, #14141c);">
+   325→                            <span class="material-icons-round text-white/20 text-4xl">play_circle</span>
+   326→                        </div>
+   327→                        <div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-white text-[9px] font-medium"><?= $suggested['duration'] ?></div>
+   328→                    </div>
+   329→                    <div class="flex-1 min-w-0 py-0.5">
+   330→                        <h4 class="text-white text-[12px] font-semibold line-clamp-2 leading-snug"><?= $suggested['title'] ?></h4>
+   331→                        <p class="text-zinc-500 text-[10px] mt-1"><?= $suggested['creator'] ?></p>
+   332→                        <p class="text-zinc-600 text-[10px]"><?= $suggested['views'] ?> views �� <?= $suggested['time'] ?></p>
+   333→                    </div>
+   334→                </a>
+   335→                <?php endfor; ?>
+   336→            </div>
+   337→        </div>
+   338→    </div>
+   339→</div>
+   340→
+   341→<!-- ===== VIDEO MORE MENU ===== -->
+   342→<div id="videoMenu" class="hidden fixed top-14 right-3 z-[50] bg-[#14141c] border border-[#1e1e2a] rounded-2xl overflow-hidden shadow-2xl min-w-[200px] slide-up" style="box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+   343→    <button onclick="addToWatchLater(); closeVideoMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   344→        <span class="material-icons-round text-zinc-300 text-lg">playlist_add</span>
+   345→        <span class="text-zinc-200 text-sm">Add to Watch Later</span>
+   346→    </button>
+   347→    <button onclick="addToQueue(); closeVideoMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   348→        <span class="material-icons-round text-zinc-300 text-lg">queue</span>
+   349→        <span class="text-zinc-200 text-sm">Add to Queue</span>
+   350→    </button>
+   351→    <button onclick="shareVideo(<?= $video['id'] ?? 0 ?>); closeVideoMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   352→        <span class="material-icons-round text-zinc-300 text-lg">share</span>
+   353→        <span class="text-zinc-200 text-sm">Share</span>
+   354→    </button>
+   355→    <div class="h-px bg-[#1e1e2a]"></div>
+   356→    <button onclick="reportVideo(); closeVideoMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   357→        <span class="material-icons-round text-red-400 text-lg">flag</span>
+   358→        <span class="text-red-400 text-sm">Report</span>
+   359→    </button>
+   360→</div>
+   361→
+   362→<!-- ===== QUALITY SELECTOR ===== -->
+   363→<div id="qualityPanel" class="hidden fixed top-14 left-3 z-[50] bg-[#14141c] border border-[#1e1e2a] rounded-xl overflow-hidden shadow-2xl slide-up" style="box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+   364→    <?php foreach (['2160p', '1080p', '720p', '480p', '360p', 'Auto'] as $q): ?>
+   365→    <button onclick="setQuality('<?= $q ?>')" class="w-full px-4 py-2.5 text-left text-sm hover:bg-white/5 transition-colors <?= $q === '1080p' ? 'text-[#834ae5] font-bold' : 'text-zinc-300' ?>" data-quality="<?= $q ?>"><?= $q ?></button>
+   366→    <?php endforeach; ?>
+   367→</div>
+   368→
+   369→<!-- ===== GIFT PANEL ===== -->
+   370→<div id="videoGiftPanel" class="fixed inset-0 z-50 hidden" onclick="closeVideoGiftPanel(event)">
+   371→    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+   372→    <div class="absolute bottom-0 left-0 right-0 bg-[#0a0a14] rounded-t-3xl max-w-lg mx-auto slide-up" onclick="event.stopPropagation()">
+   373→        <div class="flex items-center justify-between p-4 border-b border-white/10">
+   374→            <div class="flex items-center gap-2">
+   375→                <span class="material-icons-round text-amber-400 text-lg">monetization_on</span>
+   376→                <h3 class="text-white font-bold text-lg">Send a Gift</h3>
+   377→            </div>
+   378→            <button onclick="closeVideoGiftPanel()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+   379→                <span class="material-icons-round text-zinc-400 text-lg">close</span>
+   380→            </button>
+   381→        </div>
+   382→        <div class="p-4">
+   383→            <div class="flex items-center gap-2 mb-4">
+   384→                <span class="text-zinc-400 text-sm">Balance:</span>
+   385→                <span class="text-white text-sm font-bold">$1,250.00</span>
+   386→            </div>
+   387→            <div class="grid grid-cols-4 gap-3" id="videoGiftGrid">
+   388→                <?php
+   389→                $videoGifts = $data['gifts'] ?? [];
+   390→                if (empty($videoGifts)) {
+   391→                    $videoGifts = [
+   392→                        ['id' => 1, 'name' => 'Heart', 'icon' => 'favorite', 'price_usd' => 0.50, 'color_class' => 'text-red-400'],
+   393→                        ['id' => 2, 'name' => 'Fire', 'icon' => 'local_fire_department', 'price_usd' => 1.00, 'color_class' => 'text-orange-400'],
+   394→                        ['id' => 3, 'name' => 'Star', 'icon' => 'star', 'price_usd' => 2.50, 'color_class' => 'text-yellow-400'],
+   395→                        ['id' => 4, 'name' => 'Diamond', 'icon' => 'diamond', 'price_usd' => 5.00, 'color_class' => 'text-cyan-400'],
+   396→                        ['id' => 5, 'name' => 'Crown', 'icon' => 'military_tech', 'price_usd' => 10.00, 'color_class' => 'text-amber-400'],
+   397→                        ['id' => 6, 'name' => 'Rocket', 'icon' => 'rocket_launch', 'price_usd' => 20.00, 'color_class' => 'text-purple-400'],
+   398→                        ['id' => 7, 'name' => 'Party', 'icon' => 'celebration', 'price_usd' => 50.00, 'color_class' => 'text-pink-400'],
+   399→                        ['id' => 8, 'name' => 'Super', 'icon' => 'bolt', 'price_usd' => 100.00, 'color_class' => 'text-purple-300'],
+   400→                    ];
+   401→                }
+   402→                ?>
+   403→                <?php foreach ($videoGifts as $g): ?>
+   404→                <button onclick="sendVideoGift(<?= $video['id'] ?? 0 ?>, <?= $g['id'] ?>)" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 transition-all group" data-gift-id="<?= $g['id'] ?>">
+   405→                    <?php if (!empty($g['image_url'])): ?>
+   406→                    <div class="w-9 h-9 rounded-lg overflow-hidden group-hover:scale-110 transition-transform">
+   407→                        <img src="<?= $g['image_url'] ?>" alt="<?= $g['name'] ?>" class="w-full h-full object-cover">
+   408→                    </div>
+   409→                    <?php else: ?>
+   410→                    <span class="material-icons-round <?= $g['color_class'] ?? 'text-amber-400' ?> text-2xl group-hover:scale-110 transition-transform"><?= $g['icon'] ?></span>
+   411→                    <?php endif; ?>
+   412→                    <span class="text-zinc-300 text-[10px] font-medium"><?= $g['name'] ?></span>
+   413→                    <span class="text-amber-400 text-[9px] font-bold">$<?= number_format((float)($g['price_usd'] ?? 0), 2) ?></span>
+   414→                </button>
+   415→                <?php endforeach; ?>
+   416→            </div>
+   417→        </div>
+   418→    </div>
+   419→</div>
+   420→
+   421→<script>
+   422→const videoEl = document.getElementById('videoPlayer');
+   423→let isPlaying = false;
+   424→let controlsTimeout;
+   425→
+   426→// ===================== VIDEO PLAYER =====================
+   427→function toggleVideoPlay() {
+   428→    if (!videoEl || videoEl.tagName !== 'VIDEO') return;
+   429→    if (isPlaying) {
+   430→        videoEl.pause();
+   431→        isPlaying = false;
+   432→        document.getElementById('playBtn').innerHTML = '<span class="material-icons-round text-white text-3xl">play_arrow</span>';
+   433→        document.getElementById('videoControls').classList.add('hidden');
+   434→    } else {
+   435→        videoEl.play().catch(() => {});
+   436→        isPlaying = true;
+   437→        document.getElementById('playBtn').innerHTML = '<span class="material-icons-round text-white text-3xl">pause</span>';
+   438→        document.getElementById('videoControls').classList.remove('hidden');
+   439→        showControls();
+   440→    }
+   441→}
+   442→
+   443→function showTapIndicator(icon) {
+   444→    const el = document.getElementById('tapIndicator');
+   445→    document.getElementById('tapIcon').textContent = icon;
+   446→    el.classList.remove('hidden');
+   447→    el.style.opacity = '1';
+   448→    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.classList.add('hidden'), 200); }, 300);
+   449→}
+   450→
+   451→function showControls() {
+   452→    const controls = document.getElementById('videoControls');
+   453→    controls.classList.remove('hidden');
+   454→    clearTimeout(controlsTimeout);
+   455→    controlsTimeout = setTimeout(() => { if (isPlaying) controls.classList.add('hidden'); }, 3000);
+   456→}
+   457→
+   458→function toggleFullscreen() {
+   459→    const container = document.getElementById('videoPlayerContainer');
+   460→    if (!document.fullscreenElement) {
+   461→        container.requestFullscreen?.() || container.webkitRequestFullscreen?.();
+   462→    } else {
+   463→        document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+   464→    }
+   465→}
+   466→
+   467→function toggleQuality() {
+   468→    document.getElementById('qualityPanel').classList.toggle('hidden');
+   469→}
+   470→
+   471→function setQuality(q) {
+   472→    document.getElementById('qualityText').textContent = q;
+   473→    document.getElementById('qualityPanel').classList.add('hidden');
+   474→    showToast('Quality set to ' + q);
+   475→}
+   476→
+   477→function seekVideo(e) {
+   478→    if (!videoEl || !videoEl.duration) return;
+   479→    const track = document.getElementById('progressTrack');
+   480→    const rect = track.getBoundingClientRect();
+   481→    const pct = (e.clientX - rect.left) / rect.width;
+   482→    videoEl.currentTime = pct * videoEl.duration;
+   483→}
+   484→
+   485→// Video events
+   486→if (videoEl && videoEl.tagName === 'VIDEO') {
+   487→    videoEl.addEventListener('timeupdate', () => {
+   488→        if (!videoEl.duration) return;
+   489→        const pct = (videoEl.currentTime / videoEl.duration) * 100;
+   490→        document.getElementById('progressFill').style.width = pct + '%';
+   491→        document.getElementById('currentTime').textContent = formatTime(videoEl.currentTime);
+   492→    });
+   493→    videoEl.addEventListener('ended', () => {
+   494→        isPlaying = false;
+   495→        document.getElementById('playBtn').innerHTML = '<span class="material-icons-round text-white text-3xl">replay</span>';
+   496→        document.getElementById('videoControls').classList.add('hidden');
+   497→    });
+   498→    videoEl.addEventListener('play', () => {
+   499→        isPlaying = true;
+   500→        document.getElementById('playBtn').innerHTML = '<span class="material-icons-round text-white text-3xl">pause</span>';
+   501→        document.getElementById('videoControls').classList.remove('hidden');
+   502→    });
+   503→    videoEl.addEventListener('pause', () => {
+   504→        isPlaying = false;
+   505→        document.getElementById('playBtn').innerHTML = '<span class="material-icons-round text-white text-3xl">play_arrow</span>';
+   506→    });
+   507→}
+   508→
+   509→// Double tap to seek
+   510→let lastTap = 0;
+   511→document.getElementById('playOverlay')?.addEventListener('touchend', (e) => {
+   512→    const now = Date.now();
+   513→    if (now - lastTap < 300) {
+   514→        // Double tap - toggle play
+   515→        toggleVideoPlay();
+   516→    }
+   517→    lastTap = now;
+   518→});
+   519→
+   520→function formatTime(secs) {
+   521→    const m = Math.floor(secs / 60);
+   522→    const s = Math.floor(secs % 60);
+   523→    return m + ':' + String(s).padStart(2, '0');
+   524→}
+   525→
+   526→// ===================== ACTIONS =====================
+   527→function toggleLike() {
+   528→    const icon = document.getElementById('likeIcon');
+   529→    const count = document.getElementById('likeCount');
+   530→    const isLiked = icon.textContent === 'thumb_up' && icon.style.color === 'rgb(131, 74, 229)';
+   531→    if (isLiked) {
+   532→        icon.style.color = '#d4d4d8';
+   533→        icon.textContent = 'thumb_up';
+   534→        let c = parseInt(count.textContent.replace(/[^0-9]/g, '')) || 0;
+   535→        count.textContent = formatCount(Math.max(0, c - 1));
+   536→    } else {
+   537→        icon.style.color = '#834ae5';
+   538→        icon.textContent = 'thumb_up';
+   539→        let c = parseInt(count.textContent.replace(/[^0-9]/g, '')) || 0;
+   540→        count.textContent = formatCount(c + 1);
+   541→        // Remove dislike if active
+   542→        const dIcon = document.getElementById('dislikeIcon');
+   543→        if (dIcon.style.color === 'rgb(131, 74, 229)') {
+   544→            dIcon.style.color = '#d4d4d8';
+   545→            let dc = parseInt(document.getElementById('dislikeCount').textContent.replace(/[^0-9]/g, '')) || 0;
+   546→            document.getElementById('dislikeCount').textContent = formatCount(Math.max(0, dc - 1));
+   547→        }
+   548→    }
+   549→    fetch('/videos/<?= $video['id'] ?? 0 ?>/like', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
+   550→}
+   551→
+   552→function toggleDislike() {
+   553→    const icon = document.getElementById('dislikeIcon');
+   554→    const count = document.getElementById('dislikeCount');
+   555→    const isDisliked = icon.style.color === 'rgb(131, 74, 229)';
+   556→    if (isDisliked) {
+   557→        icon.style.color = '#d4d4d8';
+   558→        let c = parseInt(count.textContent.replace(/[^0-9]/g, '')) || 0;
+   559→        count.textContent = formatCount(Math.max(0, c - 1));
+   560→    } else {
+   561→        icon.style.color = '#834ae5';
+   562→        let c = parseInt(count.textContent.replace(/[^0-9]/g, '')) || 0;
+   563→        count.textContent = formatCount(c + 1);
+   564→        const lIcon = document.getElementById('likeIcon');
+   565→        if (lIcon.style.color === 'rgb(131, 74, 229)') {
+   566→            lIcon.style.color = '#d4d4d8';
+   567→            let lc = parseInt(document.getElementById('likeCount').textContent.replace(/[^0-9]/g, '')) || 0;
+   568→            document.getElementById('likeCount').textContent = formatCount(Math.max(0, lc - 1));
+   569→        }
+   570→    }
+   571→}
+   572→
+   573→function toggleSave(btn) {
+   574→    const icon = btn.querySelector('.save-icon');
+   575→    const text = btn.querySelector('.save-text');
+   576→    if (icon.textContent === 'bookmark_border') {
+   577→        icon.textContent = 'bookmark';
+   578→        icon.style.color = '#834ae5';
+   579→        text.textContent = 'Saved';
+   580→        text.style.color = '#834ae5';
+   581→        showToast('Saved to Watch Later');
+   582→    } else {
+   583→        icon.textContent = 'bookmark_border';
+   584→        icon.style.color = '';
+   585→        text.textContent = 'Save';
+   586→        text.style.color = '';
+   587→    }
+   588→}
+   589→
+   590→function toggleFollow(btn, userId) {
+   591→    const wasFollowing = btn.dataset.following === 'true';
+   592→    if (wasFollowing) {
+   593→        btn.dataset.following = 'false';
+   594→        btn.innerHTML = 'Follow <span class="material-icons-round text-[14px]">expand_more</span>';
+   595→        btn.style.background = 'linear-gradient(135deg, #834ae5, #6b21a8)';
+   596→        btn.style.color = 'white';
+   597→    } else {
+   598→        btn.dataset.following = 'true';
+   599→        btn.innerHTML = '<span class="material-icons-round text-[14px]">check</span> Following';
+   600→        btn.style.background = '#1e1e2a';
+   601→        btn.style.color = '#a1a1aa';
+   602→    }
+   603→    fetch('/follow/' + userId, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()).then(d => {
+   604→        if (d.error) {
+   605→            // Revert on error
+   606→            if (wasFollowing) {
+   607→                btn.dataset.following = 'true';
+   608→                btn.innerHTML = '<span class="material-icons-round text-[14px]">check</span> Following';
+   609→                btn.style.background = '#1e1e2a';
+   610→                btn.style.color = '#a1a1aa';
+   611→            } else {
+   612→                btn.dataset.following = 'false';
+   613→                btn.innerHTML = 'Follow <span class="material-icons-round text-[14px]">expand_more</span>';
+   614→                btn.style.background = 'linear-gradient(135deg, #834ae5, #6b21a8)';
+   615→                btn.style.color = 'white';
+   616→            }
+   617→            if (d.error === 'Login required') location.href = '/login';
+   618→            else showToast(d.error, true);
+   619→            return;
+   620→        }
+   621→        showToast(d.message || (d.following ? 'Following!' : 'Unfollowed'));
+   622→    }).catch(() => {});
+   623→}
+   624→
+   625→function downloadVideo() { showToast('Download started �8�9�1�5'); }
+   626→
+   627→// ===================== DESCRIPTION =====================
+   628→function toggleDescription() {
+   629→    const text = document.getElementById('descText');
+   630→    const btn = document.getElementById('descToggle');
+   631→    if (text.classList.contains('expanded')) {
+   632→        text.classList.remove('expanded');
+   633→        btn.textContent = '...more';
+   634→    } else {
+   635→        text.classList.add('expanded');
+   636→        btn.textContent = 'Show less';
+   637→    }
+   638→}
+   639→
+   640→// ===================== COMMENTS =====================
+   641→function likeComment(btn, idx) {
+   642→    const icon = btn.querySelector('.comment-like-icon');
+   643→    const count = btn.querySelector('.comment-like-count');
+   644→    if (icon.textContent === 'favorite_border') {
+   645→        icon.textContent = 'favorite';
+   646→        icon.style.color = '#ef4444';
+   647→        let c = parseInt(count.textContent) + 1;
+   648→        count.textContent = c;
+   649→    } else {
+   650→        icon.textContent = 'favorite_border';
+   651→        icon.style.color = '';
+   652→        let c = parseInt(count.textContent) - 1;
+   653→        count.textContent = Math.max(0, c);
+   654→    }
+   655→}
+   656→
+   657→function toggleSort() {
+   658→    const text = document.getElementById('sortText');
+   659→    text.textContent = text.textContent === 'Top' ? 'Newest' : 'Top';
+   660→    showToast('Sorted by ' + text.textContent);
+   661→}
+   662→
+   663→function addVideoComment(id) {
+   664→    const input = document.getElementById('videoCommentInput');
+   665→    const body = input.value.trim();
+   666→    if (!body) return;
+   667→    input.value = '';
+   668→
+   669→    // Optimistic render
+   670→    const list = document.getElementById('commentsList');
+   671→    if (list) {
+   672→        const now = new Date();
+   673→        const div = document.createElement('div');
+   674→        div.className = 'comment-item flex gap-2.5 rounded-xl p-2 -mx-2 slide-up';
+   675→        div.innerHTML = `
+   676→            <img src="https://placehold.co/32x32/6d28d9/ffffff?text=U" class="w-8 h-8 rounded-full flex-shrink-0 mt-0.5">
+   677→            <div class="flex-1 min-w-0">
+   678→                <div class="flex items-center gap-1.5">
+   679→                    <span class="text-white text-[12px] font-semibold">You</span>
+   680→                    <span class="text-zinc-600 text-[9px]">now</span>
+   681→                </div>
+   682→                <p class="text-zinc-300 text-[12px] leading-relaxed mt-0.5">${escapeHtml(body)}</p>
+   683→                <div class="flex items-center gap-3 mt-1">
+   684→                    <button class="flex items-center gap-0.5 text-zinc-500 hover:text-[#834ae5] transition-colors">
+   685→                        <span class="material-icons-round text-[12px]">favorite_border</span>
+   686→                        <span class="text-[10px]">0</span>
+   687→                    </button>
+   688→                    <button class="text-[10px] font-medium" style="color: #834ae5;">Reply</button>
+   689→                </div>
+   690→            </div>
+   691→        `;
+   692→        list.insertBefore(div, list.firstChild);
+   693→    }
+   694→
+   695→    fetch('/videos/' + id + '/comment', {
+   696→        method: 'POST',
+   697→        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+   698→        body: JSON.stringify({ body: body })
+   699→    }).catch(() => {});
+   700→}
+   701→
+   702→// ===================== GIFT PANEL =====================
+   703→function openVideoGiftPanel(id) {
+   704→    document.getElementById('videoGiftPanel').classList.remove('hidden');
+   705→}
+   706→
+   707→function closeVideoGiftPanel(e) {
+   708→    if (!e || e.target === e.currentTarget) {
+   709→        document.getElementById('videoGiftPanel').classList.add('hidden');
+   710→    }
+   711→}
+   712→
+   713→function sendVideoGift(videoId, giftId) {
+   714→    closeVideoGiftPanel();
+   715→    const grid = document.getElementById('videoGiftGrid');
+   716→    const btn = grid.querySelector('button[data-gift-id="' + giftId + '"]');
+   717→    const name = btn ? btn.querySelector('.text-zinc-300').textContent : 'Gift';
+   718→    showToast('Sent ' + name + '! �9�7');
+   719→    fetch('/videos/' + videoId + '/gift', {
+   720→        method: 'POST',
+   721→        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+   722→        body: JSON.stringify({ gift_id: giftId })
+   723→    }).catch(() => {});
+   724→}
+   725→
+   726→// ===================== MENUS =====================
+   727→function toggleVideoMenu() { document.getElementById('videoMenu').classList.toggle('hidden'); }
+   728→function closeVideoMenu() { document.getElementById('videoMenu').classList.add('hidden'); }
+   729→function addToWatchLater() { showToast('Added to Watch Later'); }
+   730→function addToQueue() { showToast('Added to Queue'); }
+   731→function reportVideo() { showToast('Reported �� Thank you'); }
+   732→function shareVideo(id) {
+   733→    if (navigator.share) {
+   734→        navigator.share({ title: 'Check out this video!', url: '/videos/' + id });
+   735→    } else {
+   736→        navigator.clipboard.writeText(window.location.origin + '/videos/' + id).then(() => showToast('Link copied!')).catch(() => {});
+   737→    }
+   738→    fetch('/videos/' + id + '/share', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
+   739→}
+   740→
+   741→// Close menus on outside click
+   742→document.addEventListener('click', (e) => {
+   743→    if (!e.target.closest('#videoMenu') && !e.target.closest('[onclick*="toggleVideoMenu"]')) closeVideoMenu();
+   744→    if (!e.target.closest('#qualityPanel') && !e.target.closest('[onclick*="toggleQuality"]')) document.getElementById('qualityPanel')?.classList.add('hidden');
+   745→});
+   746→
+   747→// ===================== UTILS =====================
+   748→function formatCount(n) {
+   749→    n = parseInt(n) || 0;
+   750→    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+   751→    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+   752→    return n.toString();
+   753→}
+   754→
+   755→function timeAgo(dateStr) {
+   756→    if (!dateStr) return '';
+   757→    const now = new Date();
+   758→    const date = new Date(dateStr.replace(/-/g, '/'));
+   759→    const diff = Math.floor((now - date) / 1000);
+   760→    if (diff < 60) return 'just now';
+   761→    if (diff < 3600) return Math.floor(diff / 60) + 'm';
+   762→    if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+   763→    if (diff < 604800) return Math.floor(diff / 86400) + 'd';
+   764→    if (diff < 2592000) return Math.floor(diff / 604800) + 'w';
+   765→    return Math.floor(diff / 2592000) + 'mo';
+   766→}
+   767→
+   768→function escapeHtml(text) {
+   769→    const d = document.createElement('div');
+   770→    d.textContent = text;
+   771→    return d.innerHTML;
+   772→}
+   773→
+   774→function showToast(msg) {
+   775→    const existing = document.querySelector('.video-toast');
+   776→    if (existing) existing.remove();
+   777→    const div = document.createElement('div');
+   778→    div.className = 'video-toast fixed top-4 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-white text-sm font-medium z-[200] max-w-[90%] text-center';
+   779→    div.style.cssText = 'background: linear-gradient(135deg, #834ae5, #6b21a8); box-shadow: 0 4px 20px rgba(131,74,229,0.4);';
+   780→    div.textContent = msg;
+   781→    document.body.appendChild(div);
+   782→    setTimeout(() => { div.style.opacity = '0'; div.style.transition = 'opacity 0.3s'; setTimeout(() => div.remove(), 300); }, 2000);
+   783→}
+   784→
+   785→<?php if (!empty($videoUrl)): ?>
+   786→// Auto-show controls on hover
+   787→document.getElementById('videoPlayerContainer')?.addEventListener('mousemove', () => { if (isPlaying) showControls(); });
+   788→<?php endif; ?>
+   789→</script>
+   790→
+   791→<?php $content = ob_get_clean(); ?>
+   792→<?php require __DIR__ . '/../layouts/app.php'; ?>
+   793→

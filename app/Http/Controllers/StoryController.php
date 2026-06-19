@@ -172,6 +172,66 @@ class StoryController extends Controller
     }
 
     /**
+     * Return story data as JSON for the popup viewer on the home page.
+     * Also records the view.
+     */
+    public function viewJson(string $id): Response
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return $this->json(['error' => 'Please login first.'], 401);
+        }
+
+        $story = Database::queryOne(
+            "SELECT s.*, u.name, u.username, u.avatar, u.is_verified
+             FROM stories s
+             INNER JOIN users u ON s.user_id = u.id
+             WHERE s.id = ? AND s.is_active = 1
+             LIMIT 1",
+            [(int) $id]
+        );
+
+        if (!$story) {
+            return $this->json(['error' => 'Story not found or expired.'], 404);
+        }
+
+        // Record view
+        try {
+            Database::insert('story_views', [
+                'story_id'  => (int) $id,
+                'viewer_id' => (int) $user['id'],
+            ]);
+            Database::execute("UPDATE stories SET views_count = views_count + 1 WHERE id = ?", [(int) $id]);
+        } catch (\Exception $e) {}
+
+        // Get all stories from the same user for carousel
+        $userStories = Database::query(
+            "SELECT s.id, s.image_url, s.text_content, s.text_position, s.text_color, s.text_size, s.font_style, s.views_count, s.created_at,
+                    u.name, u.username, u.avatar, u.is_verified
+             FROM stories s
+             INNER JOIN users u ON s.user_id = u.id
+             WHERE s.user_id = ? AND s.is_active = 1 AND s.expires_at > NOW()
+             ORDER BY s.created_at ASC",
+            [(int) $story['user_id']]
+        );
+
+        // Find current story index
+        $currentIndex = 0;
+        foreach ($userStories as $i => $s) {
+            if ((int)$s['id'] === (int)$id) {
+                $currentIndex = $i;
+                break;
+            }
+        }
+
+        return $this->json([
+            'story' => $story,
+            'user_stories' => $userStories,
+            'current_index' => $currentIndex,
+        ]);
+    }
+
+    /**
      * Delete own story.
      */
     public function destroy(string $id): Response

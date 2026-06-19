@@ -87,6 +87,8 @@ Router::middleware('auth')->group([], function () {
     Router::post('/music/playlist/create', [MusicController::class, 'storePlaylist']);
 
     Router::post('/videos/{id}/like', [VideoController::class, 'like']);
+    Router::post('/videos/{id}/dislike', [VideoController::class, 'dislike']);
+    Router::get('/videos/{id}/download', [VideoController::class, 'download']);
     Router::post('/videos/{id}/comment', [VideoController::class, 'comment']);
     Router::post('/videos/{id}/share', [VideoController::class, 'share']);
 
@@ -223,6 +225,7 @@ Router::middleware('auth')->group([], function () {
     Router::get('/stories/create', [StoryController::class, 'create']);
     Router::post('/stories', [StoryController::class, 'store']);
     Router::get('/stories/user/{username}', [StoryController::class, 'userStories']);
+    Router::get('/stories/view/{id}', [StoryController::class, 'viewJson']);
     // Dynamic wildcard routes (MUST be last)
     Router::get('/stories/{id}', [StoryController::class, 'show']);
     Router::delete('/stories/{id}', [StoryController::class, 'destroy']);

@@ -220,7 +220,7 @@
             </a>
             <!-- Dynamic Stories from DB -->
             <?php foreach ($storyGroups as $group): ?>
-            <a href="/stories/<?= $group['stories'][0]['id'] ?? '#' ?>"
+            <a href="#" onclick="openStoryViewer(event, <?= $group['stories'][0]['id'] ?? 0 ?>, <?= $group['user_id'] ?? 0 ?>); return false;"
                class="flex-shrink-0 flex flex-col items-center gap-2.5 w-[100px]">
                 <div class="<?= $group['has_unseen'] ? 'story-ring' : 'story-ring-seen' ?>" style="padding: 3.5px;">
                     <div class="w-[80px] h-[80px] rounded-full overflow-hidden bg-[#14141c]">
@@ -1107,6 +1107,453 @@ function selectCategory(btn) {
 
     // Start auto-scroll
     startAutoScroll();
+})();
+</script>
+
+<!-- ===== STORY POPUP VIEWER ===== -->
+<style>
+    .story-popup-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: #000;
+        overflow: hidden;
+        touch-action: pan-y;
+    }
+    .story-popup-overlay.active { display: block; }
+
+    .story-popup-overlay .sp-stage {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .story-popup-overlay .sp-stage img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .story-popup-overlay .sp-text {
+        position: absolute;
+        left: 32px;
+        right: 32px;
+        text-align: center;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 0 30px rgba(0,0,0,0.6);
+        pointer-events: none;
+        line-height: 1.35;
+        z-index: 2;
+    }
+    .story-popup-overlay .sp-text.sp-text-top { top: 100px; }
+    .story-popup-overlay .sp-text.sp-text-center { top: 50%; transform: translateY(-50%); }
+    .story-popup-overlay .sp-text.sp-text-bottom { bottom: 100px; }
+
+    /* Progress Bars */
+    .sp-progress-bars {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        gap: 4px;
+        z-index: 10;
+    }
+    .sp-progress-track {
+        flex: 1;
+        height: 3px;
+        background: rgba(255,255,255,0.25);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    .sp-progress-fill {
+        height: 100%;
+        background: #ffffff;
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+    .sp-progress-fill.sp-done {
+        width: 100%;
+        transition: none;
+    }
+
+    /* Header */
+    .sp-top-bar {
+        position: absolute;
+        top: 24px;
+        left: 16px;
+        right: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 10;
+    }
+    .sp-top-bar .sp-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.4);
+        object-fit: cover;
+    }
+    .sp-top-bar .sp-info { flex: 1; min-width: 0; }
+    .sp-top-bar .sp-info .sp-name {
+        color: white;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .sp-top-bar .sp-info .sp-time {
+        color: rgba(255,255,255,0.6);
+        font-size: 11px;
+    }
+    .sp-close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 20px;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+    .sp-close-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* Bottom actions */
+    .sp-bottom-bar {
+        position: absolute;
+        bottom: 32px;
+        left: 16px;
+        right: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10;
+    }
+    .sp-reply-input {
+        flex: 1;
+        background: rgba(255,255,255,0.12);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 24px;
+        padding: 10px 16px;
+        color: white;
+        font-size: 13px;
+        outline: none;
+    }
+    .sp-reply-input::placeholder { color: rgba(255,255,255,0.4); }
+    .sp-views-badge {
+        background: rgba(255,255,255,0.12);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 8px 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* Nav zones */
+    .sp-nav-left, .sp-nav-right {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        z-index: 5;
+    }
+    .sp-nav-left { left: 0; cursor: pointer; }
+    .sp-nav-right { right: 0; cursor: pointer; }
+
+    /* Loading spinner */
+    .sp-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 15;
+    }
+    .sp-loading .spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid rgba(131,74,229,0.3);
+        border-top-color: #834ae5;
+        border-radius: 50%;
+        animation: sp-spin 0.7s linear infinite;
+    }
+    @keyframes sp-spin { to { transform: rotate(360deg); } }
+</style>
+
+<div class="story-popup-overlay" id="storyPopupOverlay">
+    <!-- Loading -->
+    <div class="sp-loading" id="spLoading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Progress Bars -->
+    <div class="sp-progress-bars" id="spProgressBars"></div>
+
+    <!-- Top Bar -->
+    <div class="sp-top-bar" id="spTopBar" style="display:none;">
+        <img id="spAvatar" src="" alt="" class="sp-avatar">
+        <div class="sp-info">
+            <div class="sp-name" id="spName"></div>
+            <div class="sp-time" id="spTime"></div>
+        </div>
+        <div class="sp-views-badge" id="spViewsBadge">
+            <span class="material-icons-round" style="font-size:14px;">visibility</span>
+            <span id="spViewCount">0</span>
+        </div>
+        <button class="sp-close-btn" onclick="closeStoryPopup()" title="Close">
+            <span class="material-icons-round">close</span>
+        </button>
+    </div>
+
+    <!-- Story Stage -->
+    <div class="sp-stage" id="spStage" style="display:none;">
+        <img id="spImage" src="" alt="Story">
+        <div id="spText" class="sp-text sp-text-center" style="display:none;"></div>
+    </div>
+
+    <!-- Navigation Zones -->
+    <div class="sp-nav-left" onclick="spPrevStory()"></div>
+    <div class="sp-nav-right" onclick="spNextStory()"></div>
+
+    <!-- Bottom Bar -->
+    <div class="sp-bottom-bar" id="spBottomBar" style="display:none;">
+        <input type="text" class="sp-reply-input" placeholder="Send message..." id="spReplyInput"
+               onkeydown="if(event.key==='Enter')spSendReply();">
+        <button class="sp-close-btn" style="width:40px;height:40px;" onclick="spSendReply()" title="Send">
+            <span class="material-icons-round" style="font-size:20px;">send</span>
+        </button>
+    </div>
+</div>
+
+<script>
+(function() {
+    let spStories = [];
+    let spCurrentIndex = 0;
+    let spInterval = null;
+    let spProgress = 0;
+    const SP_DURATION = 5000;
+    const SP_TICK = 50;
+    let spTouchStartX = 0;
+    let spTouchStartY = 0;
+
+    const overlay = document.getElementById('storyPopupOverlay');
+    const spLoading = document.getElementById('spLoading');
+    const spProgressBars = document.getElementById('spProgressBars');
+    const spTopBar = document.getElementById('spTopBar');
+    const spStage = document.getElementById('spStage');
+    const spBottomBar = document.getElementById('spBottomBar');
+
+    window.openStoryViewer = function(event, storyId, userId) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Show overlay with loading
+        overlay.classList.add('active');
+        spLoading.style.display = 'flex';
+        spTopBar.style.display = 'none';
+        spStage.style.display = 'none';
+        spBottomBar.style.display = 'none';
+        document.body.style.overflow = 'hidden';
+
+        fetch('/stories/view/' + storyId)
+            .then(r => r.json())
+            .then(data => {
+                spLoading.style.display = 'none';
+                if (data.error) {
+                    closeStoryPopup();
+                    return;
+                }
+                spStories = (data.user_stories || []).map(function(s) {
+                    return {
+                        id: s.id,
+                        image_url: s.image_url,
+                        text_content: s.text_content || '',
+                        text_position: s.text_position || 'center',
+                        text_color: s.text_color || '#ffffff',
+                        text_size: s.text_size || '24',
+                        font_style: s.font_style || 'normal',
+                        views_count: s.views_count || 0,
+                        name: s.name,
+                        username: s.username,
+                        avatar: s.avatar,
+                        is_verified: s.is_verified || false,
+                        created_at: s.created_at,
+                    };
+                });
+                spCurrentIndex = data.current_index || 0;
+
+                // Build progress bars
+                spProgressBars.innerHTML = '';
+                spStories.forEach(function(_, i) {
+                    const track = document.createElement('div');
+                    track.className = 'sp-progress-track';
+                    const fill = document.createElement('div');
+                    fill.className = 'sp-progress-fill';
+                    fill.dataset.index = i;
+                    track.appendChild(fill);
+                    spProgressBars.appendChild(track);
+                });
+
+                spTopBar.style.display = 'flex';
+                spStage.style.display = 'flex';
+                spBottomBar.style.display = 'flex';
+
+                spLoadStory(spCurrentIndex);
+            })
+            .catch(function() {
+                spLoading.style.display = 'none';
+                closeStoryPopup();
+            });
+    };
+
+    function spLoadStory(index) {
+        if (index < 0 || index >= spStories.length) {
+            closeStoryPopup();
+            return;
+        }
+        spCurrentIndex = index;
+        const s = spStories[index];
+
+        // Image
+        document.getElementById('spImage').src = s.image_url;
+
+        // Text overlay
+        const textEl = document.getElementById('spText');
+        if (s.text_content) {
+            textEl.textContent = s.text_content;
+            textEl.className = 'sp-text sp-text-' + s.text_position;
+            textEl.style.color = s.text_color;
+            textEl.style.fontSize = s.text_size + 'px';
+            textEl.style.fontWeight = s.font_style === 'bold' ? '700' : (s.font_style === 'italic' ? '400' : '500');
+            textEl.style.fontStyle = s.font_style === 'italic' ? 'italic' : 'normal';
+            textEl.style.display = '';
+        } else {
+            textEl.style.display = 'none';
+        }
+
+        // Header
+        document.getElementById('spAvatar').src = s.avatar;
+        document.getElementById('spName').innerHTML =
+            s.name + (s.is_verified ? ' <span class="material-icons-round" style="font-size:14px;color:#834ae5;">verified</span>' : '');
+        document.getElementById('spTime').textContent = spTimeAgo(s.created_at);
+        document.getElementById('spViewCount').textContent = s.views_count;
+
+        // Progress bars
+        var fills = spProgressBars.querySelectorAll('.sp-progress-fill');
+        fills.forEach(function(f, i) {
+            f.classList.remove('sp-done');
+            f.style.width = '0%';
+            if (i < spCurrentIndex) f.classList.add('sp-done');
+        });
+
+        spStartProgress();
+    }
+
+    function spStartProgress() {
+        clearInterval(spInterval);
+        spProgress = 0;
+        var fills = spProgressBars.querySelectorAll('.sp-progress-fill');
+        var activeFill = fills[spCurrentIndex];
+        if (activeFill) {
+            activeFill.classList.remove('sp-done');
+            activeFill.style.width = '0%';
+        }
+
+        spInterval = setInterval(function() {
+            spProgress += SP_TICK;
+            var pct = Math.min((spProgress / SP_DURATION) * 100, 100);
+            if (activeFill) activeFill.style.width = pct + '%';
+
+            if (spProgress >= SP_DURATION) {
+                clearInterval(spInterval);
+                if (activeFill) activeFill.classList.add('sp-done');
+                setTimeout(spNextStory, 200);
+            }
+        }, SP_TICK);
+    }
+
+    window.spNextStory = function() {
+        var fills = spProgressBars.querySelectorAll('.sp-progress-fill');
+        if (fills[spCurrentIndex]) fills[spCurrentIndex].classList.add('sp-done');
+        spLoadStory(spCurrentIndex + 1);
+    };
+
+    window.spPrevStory = function() {
+        if (spCurrentIndex > 0) {
+            var fills = spProgressBars.querySelectorAll('.sp-progress-fill');
+            if (fills[spCurrentIndex - 1]) fills[spCurrentIndex - 1].classList.remove('sp-done');
+            spLoadStory(spCurrentIndex - 1);
+        }
+    };
+
+    window.closeStoryPopup = function() {
+        clearInterval(spInterval);
+        spStories = [];
+        spCurrentIndex = 0;
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        spProgressBars.innerHTML = '';
+    };
+
+    window.spSendReply = function() {
+        var input = document.getElementById('spReplyInput');
+        var msg = input.value.trim();
+        if (!msg || !spStories[spCurrentIndex]) return;
+        var s = spStories[spCurrentIndex];
+        window.location.href = '/messages/create?to=' + s.username + '&text=' + encodeURIComponent('Replied to your story: ' + msg);
+    };
+
+    function spTimeAgo(dateStr) {
+        if (!dateStr) return '';
+        var now = new Date();
+        var date = new Date(dateStr.replace(/-/g, '/'));
+        var diff = Math.floor((now - date) / 1000);
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+        return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (!overlay.classList.contains('active')) return;
+        if (e.key === 'ArrowLeft') spPrevStory();
+        if (e.key === 'ArrowRight') spNextStory();
+        if (e.key === 'Escape') closeStoryPopup();
+    });
+
+    // Touch swipe navigation
+    overlay.addEventListener('touchstart', function(e) {
+        spTouchStartX = e.changedTouches[0].screenX;
+        spTouchStartY = e.changedTouches[0].screenY;
+        clearInterval(spInterval); // Pause
+    }, { passive: true });
+
+    overlay.addEventListener('touchend', function(e) {
+        var diffX = e.changedTouches[0].screenX - spTouchStartX;
+        var diffY = e.changedTouches[0].screenY - spTouchStartY;
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+            if (diffX > 0) spPrevStory();
+            else spNextStory();
+        } else {
+            spStartProgress();
+        }
+    }, { passive: true });
 })();
 </script>
 

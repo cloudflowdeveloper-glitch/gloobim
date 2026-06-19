@@ -274,6 +274,36 @@ class VideoController extends Controller
         }
     }
 
+    public function dislike($id): Response
+    {
+        try {
+            Database::execute("UPDATE videos SET dislikes = COALESCE(dislikes, 0) + 1 WHERE id = ?", [$id]);
+            $video = Database::query("SELECT dislikes FROM videos WHERE id = ?", [$id]);
+            return $this->json(['message' => 'Disliked', 'dislikes' => $video[0]['dislikes'] ?? 0]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function download($id): Response
+    {
+        try {
+            $video = Database::queryOne("SELECT title, video_url, thumbnail FROM videos WHERE id = ? AND status = 'published'", [$id]);
+            if (!$video || empty($video['video_url'])) {
+                return $this->json(['error' => 'Video not available for download'], 404);
+            }
+            // Increment download count
+            Database::execute("UPDATE videos SET shares = COALESCE(shares, 0) + 1 WHERE id = ?", [$id]);
+            return $this->json([
+                'message' => 'Download started',
+                'video_url' => $video['video_url'],
+                'title' => $video['title'],
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function comment($id): Response
     {
         $user = \Core\Auth::user();

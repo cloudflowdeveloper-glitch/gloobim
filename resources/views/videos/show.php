@@ -60,6 +60,14 @@ if (is_string($tags)) $tags = json_decode($tags, true) ?: [];
 
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .reply-input-wrap { margin-top: 8px; margin-left: 32px; display: none; }
+    .reply-input-wrap.active { display: flex; align-items: center; gap: 8px; animation: slideUp 0.2s ease-out; }
+    .reply-input-wrap input { flex:1; background: #14141c; color: white; padding: 8px 12px; border-radius: 20px; border: 1px solid #1e1e2a; font-size: 12px; outline: none; transition: border-color 0.2s; }
+    .reply-input-wrap input:focus { border-color: #834ae5; }
+    .reply-input-wrap button { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #834ae5, #6b21a8); border: none; cursor: pointer; flex-shrink: 0; transition: opacity 0.2s; }
+    .reply-input-wrap button:hover { opacity: 0.85; }
+    .reply-cancel { background: #1e1e2a !important; color: #a1a1aa !important; }
 </style>
 
 <div class="max-w-lg mx-auto pb-20" style="background: #090c15;">
@@ -284,7 +292,7 @@ if (is_string($tags)) $tags = json_decode($tags, true) ?: [];
                                 <span class="material-icons-round text-[12px] comment-like-icon">favorite_border</span>
                                 <span class="text-[10px] comment-like-count"><?= rand(2, 200) ?></span>
                             </button>
-                            <button class="text-[10px] font-medium hover:text-[#834ae5] transition-colors" style="color: #834ae5;">Reply</button>
+                            <button onclick="toggleReplyInput(this, <?= $comment['id'] ?? 0 ?>, '<?= htmlspecialchars(addslashes($comment['commenter_name'] ?? 'User')) ?>')" class="text-[10px] font-medium hover:text-[#834ae5] transition-colors" style="color: #834ae5;">Reply</button>
                             <button class="text-zinc-600 hover:text-zinc-400 transition-colors">
                                 <span class="material-icons-round text-[14px]">more_horiz</span>
                             </button>
@@ -568,6 +576,7 @@ function toggleDislike() {
             document.getElementById('likeCount').textContent = formatCount(Math.max(0, lc - 1));
         }
     }
+    fetch('/videos/<?= $video['id'] ?? 0 ?>/dislike', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
 }
 
 function toggleSave(btn) {
@@ -579,11 +588,13 @@ function toggleSave(btn) {
         text.textContent = 'Saved';
         text.style.color = '#834ae5';
         showToast('Saved to Watch Later');
+        fetch('/bookmark/video/<?= $video['id'] ?? 0 ?>', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
     } else {
         icon.textContent = 'bookmark_border';
         icon.style.color = '';
         text.textContent = 'Save';
         text.style.color = '';
+        fetch('/bookmark/video/<?= $video['id'] ?? 0 ?>', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
     }
 }
 
@@ -622,7 +633,28 @@ function toggleFollow(btn, userId) {
     }).catch(() => {});
 }
 
-function downloadVideo() { showToast('Download started �8�9�1�5'); }
+function downloadVideo() {
+    const videoId = <?= $video['id'] ?? 0 ?>;
+    fetch('/videos/' + videoId + '/download', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.video_url) {
+            const a = document.createElement('a');
+            a.href = data.video_url;
+            a.download = (data.title || 'video') + '.mp4';
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Download started!');
+        } else {
+            showToast(data.error || 'Video not available');
+        }
+    })
+    .catch(() => showToast('Download failed'));
+}
 
 // ===================== DESCRIPTION =====================
 function toggleDescription() {
@@ -685,7 +717,7 @@ function addVideoComment(id) {
                         <span class="material-icons-round text-[12px]">favorite_border</span>
                         <span class="text-[10px]">0</span>
                     </button>
-                    <button class="text-[10px] font-medium" style="color: #834ae5;">Reply</button>
+                    <button onclick="toggleReplyInput(this, 0, 'You')" class="text-[10px] font-medium" style="color: #834ae5;">Reply</button>
                 </div>
             </div>
         `;
@@ -763,6 +795,60 @@ function timeAgo(dateStr) {
     if (diff < 604800) return Math.floor(diff / 86400) + 'd';
     if (diff < 2592000) return Math.floor(diff / 604800) + 'w';
     return Math.floor(diff / 2592000) + 'mo';
+}
+
+function toggleReplyInput(btn, commentId, commenterName) {
+    const commentItem = btn.closest('.comment-item');
+    let replyWrap = commentItem.querySelector('.reply-input-wrap');
+    
+    if (replyWrap && replyWrap.classList.contains('active')) {
+        replyWrap.classList.remove('active');
+        replyWrap.remove();
+        return;
+    }
+    
+    document.querySelectorAll('.reply-input-wrap.active').forEach(el => el.remove());
+    
+    replyWrap = document.createElement('div');
+    replyWrap.className = 'reply-input-wrap active';
+    replyWrap.innerHTML = `
+        <input type="text" placeholder="Reply to ${escapeHtml(commenterName)}..." onkeydown="if(event.key==='Enter')submitReply(${commentId}, this)" autofocus>
+        <button onclick="submitReply(${commentId}, this.previousElementSibling)" title="Send">
+            <span class="material-icons-round text-white text-[14px]">send</span>
+        </button>
+        <button onclick="this.parentElement.classList.remove('active');this.parentElement.remove();" class="reply-cancel" title="Cancel">
+            <span class="material-icons-round text-[14px]">close</span>
+        </button>
+    `;
+    commentItem.querySelector('.flex-1.min-w-0').appendChild(replyWrap);
+    replyWrap.querySelector('input').focus();
+}
+
+function submitReply(commentId, input) {
+    const body = input.value.trim();
+    if (!body) return;
+    input.value = '';
+    
+    const videoId = <?= $video['id'] ?? 0 ?>;
+    
+    const replyWrap = input.closest('.reply-input-wrap');
+    const replyDiv = document.createElement('div');
+    replyDiv.className = 'mt-2 pl-4 border-l-2 border-[#834ae5]/30 slide-up';
+    replyDiv.innerHTML = `
+        <p class="text-zinc-300 text-[12px] leading-relaxed"><span class="text-[#834ae5] font-semibold">@You</span> ${escapeHtml(body)}</p>
+        <p class="text-zinc-600 text-[9px] mt-0.5">just now</p>
+    `;
+    replyWrap.after(replyDiv);
+    replyWrap.classList.remove('active');
+    replyWrap.remove();
+    
+    fetch('/videos/' + videoId + '/comment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ body: '@' + body, parent_id: commentId })
+    }).catch(() => {});
+    
+    showToast('Reply posted!');
 }
 
 function escapeHtml(text) {
