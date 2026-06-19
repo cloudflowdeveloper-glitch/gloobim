@@ -1,0 +1,604 @@
+     1→<?php $title = 'Chat - Globiim'; $hideTopNav = true; $hideBottomNav = true; ?>
+     2→<?php
+     3→$messages = $data['messages'] ?? [];
+     4→$conversation = $data['conversation'] ?? null;
+     5→$userId = (int)($data['userId'] ?? 0);
+     6→$otherName = $conversation['other_name'] ?? 'Chat';
+     7→$otherAvatar = $conversation['other_avatar'] ?? 'https://placehold.co/48x48/3f3f46/ffffff?text=U';
+     8→$otherVerified = !empty($conversation['other_verified']);
+     9→$otherOnline = !empty($conversation['other_online']);
+    10→?>
+    11→<?php ob_start(); ?>
+    12→<style>
+    13→    * { box-sizing: border-box; }
+    14→
+    15→    /* Chat area */
+    16→    .chat-scroll { overflow-y: auto; -ms-overflow-style: none; scrollbar-width: none; }
+    17→    .chat-scroll::-webkit-scrollbar { display: none; }
+    18→
+    19→    /* Message bubbles */
+    20→    .msg-mine .msg-bubble {
+    21→        background: linear-gradient(135deg, #834ae5, #6b21a8);
+    22→        border-radius: 18px 18px 4px 18px;
+    23→        color: white;
+    24→    }
+    25→    .msg-other .msg-bubble {
+    26→        background: #14141c;
+    27→        border: 1px solid rgba(255,255,255,0.05);
+    28→        border-radius: 18px 18px 18px 4px;
+    29→        color: white;
+    30→    }
+    31→
+    32→    /* Typing indicator */
+    33→    .typing-bubble {
+    34→        background: #14141c;
+    35→        border: 1px solid rgba(255,255,255,0.05);
+    36→        border-radius: 18px 18px 18px 4px;
+    37→    }
+    38→    .typing-dots span {
+    39→        display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    40→        background: #834ae5; animation: bounce 1.4s infinite;
+    41→    }
+    42→    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    43→    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    44→    @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+    45→
+    46→    /* Image message */
+    47→    .msg-image { border-radius: 14px; overflow: hidden; max-width: 220px; }
+    48→    .msg-image img { width: 100%; display: block; cursor: pointer; transition: opacity 0.2s; }
+    49→    .msg-image img:hover { opacity: 0.9; }
+    50→
+    51→    /* Voice message */
+    52→    .voice-wave {
+    53→        display: flex; align-items: center; gap: 2px; height: 20px;
+    54→    }
+    55→    .voice-wave span {
+    56→        width: 3px; border-radius: 2px; background: #834ae5;
+    57→        animation: wave 1.2s ease-in-out infinite;
+    58→    }
+    59→    .voice-wave span:nth-child(1) { height: 6px; animation-delay: 0s; }
+    60→    .voice-wave span:nth-child(2) { height: 12px; animation-delay: 0.15s; }
+    61→    .voice-wave span:nth-child(3) { height: 8px; animation-delay: 0.3s; }
+    62→    .voice-wave span:nth-child(4) { height: 16px; animation-delay: 0.45s; }
+    63→    .voice-wave span:nth-child(5) { height: 10px; animation-delay: 0.6s; }
+    64→    .voice-wave span:nth-child(6) { height: 14px; animation-delay: 0.75s; }
+    65→    .voice-wave span:nth-child(7) { height: 7px; animation-delay: 0.9s; }
+    66→    @keyframes wave { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.4); } }
+    67→
+    68→    /* Input area */
+    69→    .chat-input { background: #14141c; border: 1px solid #1e1e2a; border-radius: 24px; }
+    70→    .chat-input:focus { border-color: #834ae5; outline: none; }
+    71→    .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; max-height: 200px; overflow-y: auto; }
+    72→    .emoji-btn { padding: 6px; font-size: 20px; border-radius: 8px; cursor: pointer; transition: background 0.15s; text-align: center; }
+    73→    .emoji-btn:hover { background: rgba(131,74,229,0.15); }
+    74→
+    75→    /* Reply preview */
+    76→    .reply-preview { background: rgba(131,74,229,0.1); border-left: 3px solid #834ae5; border-radius: 0 10px 10px 0; }
+    77→
+    78→    /* Attach menu */
+    79→    .attach-item { transition: all 0.2s ease; }
+    80→    .attach-item:hover { transform: translateY(-2px); }
+    81→    .attach-item:active { transform: scale(0.95); }
+    82→
+    83→    /* Slide up animation */
+    84→    @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+    85→    .slide-up { animation: slideUp 0.25s ease-out forwards; }
+    86→
+    87→    /* Pulse online */
+    88→    @keyframes pulse-online { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    89→    .pulse-online { animation: pulse-online 2s ease-in-out infinite; }
+    90→
+    91→    /* Image viewer overlay */
+    92→    .image-viewer { transition: opacity 0.3s ease; }
+    93→</style>
+    94→
+    95→<div class="max-w-lg mx-auto h-screen flex flex-col" style="background: #090c15;">
+    96→
+    97→    <!-- ===== CHAT HEADER ===== -->
+    98→    <div class="flex items-center gap-3 px-3 py-2.5 flex-shrink-0 glass" style="border-bottom: 1px solid rgba(20,20,28,0.8);">
+    99→        <!-- Back -->
+   100→        <a href="/messages" class="w-9 h-9 rounded-full bg-[#14141c] border border-[#1e1e2a] flex items-center justify-center hover:bg-[#1e1e2a] transition-colors flex-shrink-0">
+   101→            <span class="material-icons-round text-zinc-300 text-lg">arrow_back</span>
+   102→        </a>
+   103→
+   104→        <?php if ($conversation): ?>
+   105→        <!-- User Info -->
+   106→        <div class="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer" onclick="showProfileSheet()">
+   107→            <div class="relative flex-shrink-0">
+   108→                <div class="w-10 h-10 rounded-full overflow-hidden" style="box-shadow: 0 0 0 2px rgba(131,74,229,0.4);">
+   109→                    <img src="<?= $otherAvatar ?>" alt="<?= htmlspecialchars($otherName) ?>" class="w-full h-full object-cover">
+   110→                </div>
+   111→                <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#090c15] <?= $otherOnline ? 'bg-green-500 pulse-online' : 'bg-zinc-600' ?>"></div>
+   112→                <?php if ($otherVerified): ?>
+   113→                <div class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#834ae5] rounded-full flex items-center justify-center">
+   114→                    <svg width="8" height="8" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+   115→                </div>
+   116→                <?php endif; ?>
+   117→            </div>
+   118→            <div class="min-w-0">
+   119→                <h2 class="text-white text-sm font-bold truncate"><?= htmlspecialchars($otherName) ?></h2>
+   120→                <span class="text-[10px] <?= $otherOnline ? 'text-green-400' : 'text-zinc-500' ?>" id="onlineStatus"><?= $otherOnline ? 'Online' : 'Last seen recently' ?></span>
+   121→            </div>
+   122→        </div>
+   123→
+   124→        <!-- Header Actions -->
+   125→        <div class="flex items-center gap-1 flex-shrink-0">
+   126→            <button onclick="startVoiceCall()" class="w-9 h-9 rounded-full bg-[#14141c] border border-[#1e1e2a] flex items-center justify-center hover:bg-[#1e1e2a] transition-colors">
+   127→                <span class="material-icons-round text-zinc-400 text-lg">phone</span>
+   128→            </button>
+   129→            <button onclick="startVideoCall()" class="w-9 h-9 rounded-full bg-[#14141c] border border-[#1e1e2a] flex items-center justify-center hover:bg-[#1e1e2a] transition-colors">
+   130→                <span class="material-icons-round text-zinc-400 text-lg">videocam</span>
+   131→            </button>
+   132→            <button onclick="toggleChatMenu()" class="w-9 h-9 rounded-full bg-[#14141c] border border-[#1e1e2a] flex items-center justify-center hover:bg-[#1e1e2a] transition-colors">
+   133→                <span class="material-icons-round text-zinc-400 text-lg">more_vert</span>
+   134→            </button>
+   135→        </div>
+   136→        <?php else: ?>
+   137→        <h2 class="text-white text-sm font-bold">Chat</h2>
+   138→        <?php endif; ?>
+   139→    </div>
+   140→
+   141→    <!-- ===== CHAT MENU (hidden) ===== -->
+   142→    <div id="chatMenu" class="hidden fixed top-14 right-3 z-[50] bg-[#14141c] border border-[#1e1e2a] rounded-2xl overflow-hidden shadow-2xl min-w-[200px] slide-up" style="box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+   143→        <button onclick="viewProfile(); closeChatMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   144→            <span class="material-icons-round text-zinc-300 text-lg">person</span>
+   145→            <span class="text-zinc-200 text-sm">View Profile</span>
+   146→        </button>
+   147→        <button onclick="toggleMute(); closeChatMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   148→            <span class="material-icons-round text-zinc-300 text-lg" id="muteIcon">notifications</span>
+   149→            <span class="text-zinc-200 text-sm" id="muteText">Mute Notifications</span>
+   150→        </button>
+   151→        <button onclick="searchInChat(); closeChatMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   152→            <span class="material-icons-round text-zinc-300 text-lg">search</span>
+   153→            <span class="text-zinc-200 text-sm">Search in Chat</span>
+   154→        </button>
+   155→        <div class="h-px bg-[#1e1e2a]"></div>
+   156→        <button onclick="clearChat(); closeChatMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   157→            <span class="material-icons-round text-zinc-500 text-lg">delete_sweep</span>
+   158→            <span class="text-zinc-400 text-sm">Clear Chat</span>
+   159→        </button>
+   160→        <button onclick="blockUser(); closeChatMenu();" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+   161→            <span class="material-icons-round text-red-400 text-lg">block</span>
+   162→            <span class="text-red-400 text-sm">Block User</span>
+   163→        </button>
+   164→    </div>
+   165→
+   166→    <!-- ===== MESSAGES AREA ===== -->
+   167→    <div class="flex-1 chat-scroll p-3 space-y-2" id="chatMessages">
+   168→        <?php if ($conversation && !empty($messages)): ?>
+   169→            <?php $prevDate = null; ?>
+   170→            <?php foreach ($messages as $msg): ?>
+   171→            <?php
+   172→                $isMine = (int)$msg['sender_id'] === $userId;
+   173→                $msgDate = date('Y-m-d', strtotime($msg['created_at']));
+   174→                $today = date('Y-m-d');
+   175→                $yesterday = date('Y-m-d', strtotime('-1 day'));
+   176→                $msgType = $msg['message_type'] ?? 'text';
+   177→            ?>
+   178→            <!-- Date Separator -->
+   179→            <?php if ($msgDate !== $prevDate): ?>
+   180→            <div class="flex items-center justify-center py-2">
+   181→                <span class="px-3 py-1 rounded-full bg-[#14141c] text-zinc-500 text-[10px] font-medium" style="border: 1px solid rgba(255,255,255,0.04);">
+   182→                    <?php if ($msgDate === $today): ?>Today
+   183→                    <?php elseif ($msgDate === $yesterday): ?>Yesterday
+   184→                    <?php else: ?><?= date('M j, Y', strtotime($msg['created_at'])) ?>
+   185→                    <?php endif; ?>
+   186→                </span>
+   187→            </div>
+   188→            <?php $prevDate = $msgDate; ?>
+   189→            <?php endif; ?>
+   190→
+   191→            <!-- Message -->
+   192→            <div class="flex <?= $isMine ? 'justify-end' : 'justify-start' ?> items-end gap-1.5 msg-<?= $isMine ? 'mine' : 'other' ?>" data-msg-id="<?= $msg['id'] ?? '' ?>">
+   193→                <?php if (!$isMine): ?>
+   194→                <div class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 mb-5">
+   195→                    <img src="<?= $msg['sender_avatar'] ?? $otherAvatar ?>" alt="" class="w-full h-full object-cover">
+   196→                </div>
+   197→                <?php endif; ?>
+   198→
+   199→                <div class="max-w-[78%]">
+   200→                    <?php if ($msgType === 'image' && !empty($msg['image_url'])): ?>
+   201→                    <!-- Image Message -->
+   202→                    <div class="msg-image <?= $isMine ? 'ml-auto' : '' ?>" onclick="viewImage('<?= htmlspecialchars($msg['image_url']) ?>')">
+   203→                        <img src="<?= htmlspecialchars($msg['image_url']) ?>" alt="Image">
+   204→                    </div>
+   205→                    <?php if (!empty($msg['body'])): ?>
+   206→                    <div class="msg-bubble mt-1 px-3 py-2 <?= $isMine ? 'msg-mine' : 'msg-other' ?>">
+   207→                        <p class="text-xs leading-relaxed"><?= htmlspecialchars($msg['body']) ?></p>
+   208→                    </div>
+   209→                    <?php endif; ?>
+   210→                    <?php elseif ($msgType === 'voice'): ?>
+   211→                    <!-- Voice Message -->
+   212→                    <div class="msg-bubble px-3 py-2.5 flex items-center gap-2.5 min-w-[200px]" style="<?= $isMine ? 'background: linear-gradient(135deg, #834ae5, #6b21a8);' : 'background: #14141c; border: 1px solid rgba(255,255,255,0.05);' ?>">
+   213→                        <button class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background: rgba(255,255,255,0.15);">
+   214→                            <span class="material-icons-round text-white text-sm">play_arrow</span>
+   215→                        </button>
+   216→                        <div class="flex-1">
+   217→                            <div class="voice-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+   218→                        </div>
+   219→                        <span class="text-white/60 text-[10px]">0:<?= str_pad($msg['duration'] ?? 12, 2, '0') ?></span>
+   220→                    </div>
+   221→                    <?php else: ?>
+   222→                    <!-- Text Message -->
+   223→                    <div class="msg-bubble px-3.5 py-2.5">
+   224→                        <p class="text-[13px] leading-relaxed"><?= htmlspecialchars($msg['body'] ?? '') ?></p>
+   225→                    </div>
+   226→                    <?php endif; ?>
+   227→
+   228→                    <!-- Timestamp & Status -->
+   229→                    <div class="flex items-center justify-end gap-1 mt-0.5 pr-1">
+   230→                        <span class="text-[9px] <?= $isMine ? 'text-purple-300/50' : 'text-zinc-600' ?>">
+   231→                            <?= isset($msg['created_at']) ? date('h:i A', strtotime($msg['created_at'])) : '' ?>
+   232→                        </span>
+   233→                        <?php if ($isMine): ?>
+   234→                        <span class="material-icons-round text-[#834ae5]/60" style="font-size: 11px;" id="status-<?= $msg['id'] ?? '' ?>">
+   235→                            <?= (!empty($msg['read_at']) ? 'done_all' : 'check') ?>
+   236→                        </span>
+   237→                        <?php endif; ?>
+   238→                    </div>
+   239→                </div>
+   240→            </div>
+   241→            <?php endforeach; ?>
+   242→        <?php else: ?>
+   243→        <!-- Empty Chat State -->
+   244→        <div class="flex items-center justify-center h-full">
+   245→            <div class="text-center px-6">
+   246→                <div class="w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden" style="box-shadow: 0 0 0 2.5px rgba(131,74,229,0.4);">
+   247→                    <img src="<?= $otherAvatar ?>" alt="" class="w-full h-full object-cover">
+   248→                </div>
+   249→                <h3 class="text-white font-bold text-sm mb-0.5"><?= htmlspecialchars($otherName) ?></h3>
+   250→                <p class="text-zinc-500 text-xs mb-4">No messages yet. Say hello! 👋</p>
+   251→                <div class="flex flex-col gap-2 max-w-[200px] mx-auto">
+   252→                    <button onclick="quickReply('Hey! 👋')" class="px-4 py-2 rounded-full text-xs font-medium transition-colors" style="background: rgba(131,74,229,0.12); color: #c084fc; border: 1px solid rgba(131,74,229,0.2);">Hey! 👋</button>
+   253→                    <button onclick="quickReply('What\'s up?')" class="px-4 py-2 rounded-full text-xs font-medium transition-colors" style="background: rgba(131,74,229,0.12); color: #c084fc; border: 1px solid rgba(131,74,229,0.2);">What's up?</button>
+   254→                    <button onclick="quickReply('Love your content! 🔥')" class="px-4 py-2 rounded-full text-xs font-medium transition-colors" style="background: rgba(131,74,229,0.12); color: #c084fc; border: 1px solid rgba(131,74,229,0.2);">Love your content! 🔥</button>
+   255→                </div>
+   256→            </div>
+   257→        </div>
+   258→        <?php endif; ?>
+   259→
+   260→        <!-- Typing Indicator (hidden) -->
+   261→        <div id="typingIndicator" class="hidden flex justify-start items-end gap-1.5">
+   262→            <div class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 mb-5">
+   263→                <img src="<?= $otherAvatar ?>" alt="" class="w-full h-full object-cover">
+   264→            </div>
+   265→            <div class="typing-bubble px-4 py-3">
+   266→                <div class="typing-dots"><span></span><span></span><span></span></div>
+   267→            </div>
+   268→        </div>
+   269→    </div>
+   270→
+   271→    <!-- ===== REPLY PREVIEW BAR (hidden) ===== -->
+   272→    <div id="replyPreview" class="hidden flex-shrink-0 px-3 pt-2">
+   273→        <div class="reply-preview flex items-center gap-2 px-3 py-2 rounded-lg">
+   274→            <div class="flex-1 min-w-0">
+   275→                <p class="text-[10px] text-[#834ae5] font-semibold">Replying to</p>
+   276→                <p class="text-zinc-400 text-[11px] truncate" id="replyText"></p>
+   277→            </div>
+   278→            <button onclick="cancelReply()" class="p-1 rounded-full hover:bg-white/10 transition-colors">
+   279→                <span class="material-icons-round text-zinc-500 text-sm">close</span>
+   280→            </button>
+   281→        </div>
+   282→    </div>
+   283→
+   284→    <!-- ===== ATTACHMENT MENU (hidden) ===== -->
+   285→    <div id="attachMenu" class="hidden flex-shrink-0 px-3 pt-2 pb-2 slide-up">
+   286→        <div class="flex items-center gap-3 justify-around bg-[#14141c] rounded-2xl p-3 border border-[#1e1e2a]">
+   287→            <button onclick="attachImage()" class="attach-item flex flex-col items-center gap-1">
+   288→                <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: rgba(131,74,229,0.15);">
+   289→                    <span class="material-icons-round text-[#834ae5] text-xl">photo</span>
+   290→                </div>
+   291→                <span class="text-[9px] text-zinc-400 font-medium">Photo</span>
+   292→            </button>
+   293→            <button onclick="attachVoice()" class="attach-item flex flex-col items-center gap-1">
+   294→                <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: rgba(239,68,68,0.12);">
+   295→                    <span class="material-icons-round text-red-400 text-xl">mic</span>
+   296→                </div>
+   297→                <span class="text-[9px] text-zinc-400 font-medium">Voice</span>
+   298→            </button>
+   299→            <button onclick="attachFile()" class="attach-item flex flex-col items-center gap-1">
+   300→                <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: rgba(59,130,246,0.12);">
+   301→                    <span class="material-icons-round text-blue-400 text-xl">attach_file</span>
+   302→                </div>
+   303→                <span class="text-[9px] text-zinc-400 font-medium">File</span>
+   304→            </button>
+   305→            <button onclick="attachLocation()" class="attach-item flex flex-col items-center gap-1">
+   306→                <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: rgba(16,185,129,0.12);">
+   307→                    <span class="material-icons-round text-emerald-400 text-xl">location_on</span>
+   308→                </div>
+   309→                <span class="text-[9px] text-zinc-400 font-medium">Location</span>
+   310→            </button>
+   311→            <button onclick="attachContact()" class="attach-item flex flex-col items-center gap-1">
+   312→                <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: rgba(251,146,60,0.12);">
+   313→                    <span class="material-icons-round text-amber-400 text-xl">contact_page</span>
+   314→                </div>
+   315→                <span class="text-[9px] text-zinc-400 font-medium">Contact</span>
+   316→            </button>
+   317→        </div>
+   318→    </div>
+   319→
+   320→    <!-- ===== EMOJI PICKER (hidden) ===== -->
+   321→    <div id="emojiPicker" class="hidden flex-shrink-0 px-3 pt-2 pb-2 slide-up">
+   322→        <div class="bg-[#14141c] rounded-2xl p-3 border border-[#1e1e2a]">
+   323→            <div class="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-hide">
+   324→                <?php foreach (['😀','😍','😂','🔥','❤️','👏','💯','🎉','😍','🤩','😎','✨','🙏','💪','🎵','🌟','💐','🥰','🤯','💀','😏','🥺','😭','🤝','👑'] as $cat): ?>
+   325→                <button onclick="insertEmoji('<?= $cat ?>')" class="flex-shrink-0 text-xl p-1 rounded-lg hover:bg-white/10 transition-colors"><?= $cat ?></button>
+   326→                <?php endforeach; ?>
+   327→            </div>
+   328→            <div class="h-px bg-[#1e1e2a] mb-2"></div>
+   329→            <div class="emoji-grid">
+   330→                <?php foreach (['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🫢','🫣','🤫','🤔','🫡','🤐','🤨','😐','😑','😶','🫥','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🥴','😵','🤯','🥵','🥶','🥶','😱','😨','😰','😥','😢','😭','😤','😠','😡','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','💕','💞','💓','💗','💖','💝','💘','💟','👋','🤚','🖐️','✋','🖖','🫱','🫲','👌','🤌','🤏','✌️','🤞','🫰','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','🫵','👍','👎','✊','👊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🔥','⭐','🌟','✨','💥','💫','💦','💨','🕳️','💣','💬','💭','🗯️','🎵','🎶','🎤','🎧','🎸','🎹','🥁','🎺','🎷','🪗','🎻','🎮','🕹️','🎲','♟️','🎯','🎳','🎰','🧩','🚗','🚕','🚙','🚌','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','✈️','🚀','🛸','🚁','⚓','🛥️','🚤','⛴️','🎁','🎂','🎄','🎃','🧧','🎀','🎉','🎊','🎎','🏮','🎐','🧨','✨','🎈','🎈'] as $em): ?>
+   331→                <button onclick="insertEmoji('<?= $em ?>')" class="emoji-btn"><?= $em ?></button>
+   332→                <?php endforeach; ?>
+   333→            </div>
+   334→        </div>
+   335→    </div>
+   336→
+   337→    <!-- ===== MESSAGE INPUT ===== -->
+   338→    <?php if ($conversation): ?>
+   339→    <div class="flex items-center gap-2 px-3 py-2.5 flex-shrink-0" style="border-top: 1px solid rgba(20,20,28,0.8); background: rgba(9,12,21,0.95); backdrop-filter: blur(20px);">
+   340→        <!-- Attach Button -->
+   341→        <button onclick="toggleAttachMenu()" class="w-10 h-10 rounded-full bg-[#14141c] border border-[#1e1e2a] flex items-center justify-center flex-shrink-0 hover:bg-[#1e1e2a] transition-colors" id="attachBtn">
+   342→            <span class="material-icons-round text-zinc-400 text-lg">add_circle_outline</span>
+   343→        </button>
+   344→
+   345→        <!-- Input -->
+   346→        <div class="flex-1 relative">
+   347→            <input type="text" id="messageInput" placeholder="Type a message..." class="chat-input w-full text-white px-4 py-2.5 text-sm placeholder:text-zinc-600 transition-all" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}" oninput="toggleSendBtn()">
+   348→        </div>
+   349→
+   350→        <!-- Emoji Button -->
+   351→        <button onclick="toggleEmojiPicker()" class="w-10 h-10 rounded-full bg-[#14141c] border border-[#1e1e2a] flex items-center justify-center flex-shrink-0 hover:bg-[#1e1e2a] transition-colors" id="emojiBtn">
+   352→            <span class="material-icons-round text-zinc-400 text-lg">sentiment_satisfied_alt</span>
+   353→        </button>
+   354→
+   355→        <!-- Send / Voice Button -->
+   356→        <button onclick="sendMessage()" id="sendBtn" class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all opacity-50 cursor-not-allowed" style="background: linear-gradient(135deg, #834ae5, #6b21a8);">
+   357→            <span class="material-icons-round text-white text-lg" id="sendIcon">mic</span>
+   358→        </button>
+   359→    </div>
+   360→    <?php endif; ?>
+   361→</div>
+   362→
+   363→<!-- ===== IMAGE VIEWER OVERLAY ===== -->
+   364→<div id="imageViewer" class="hidden fixed inset-0 z-[100] bg-black/95 flex items-center justify-center image-viewer" onclick="closeImageViewer()">
+   365→    <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors z-10">
+   366→        <span class="material-icons-round text-white text-xl">close</span>
+   367→    </button>
+   368→    <img id="viewerImage" src="" alt="" class="max-w-[95%] max-h-[85vh] object-contain rounded-lg">
+   369→</div>
+   370→
+   371→<!-- Hidden file input for image upload -->
+   372→<input type="file" id="imageUpload" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
+   373→
+   374→<script>
+   375→const CONVERSATION_ID = <?= $data['conversation']['id'] ?? 0 ?>;
+   376→const USER_ID = <?= $userId ?>;
+   377→let replyTo = null;
+   378→
+   379→// ===================== SEND MESSAGE =====================
+   380→async function sendMessage() {
+   381→    const input = document.getElementById('messageInput');
+   382→    const body = input.value.trim();
+   383→    if (!body || !CONVERSATION_ID) return;
+   384→    input.value = '';
+   385→    toggleSendBtn();
+   386→
+   387→    // Optimistic render
+   388→    appendMessage(body, 'text', true);
+   389→    scrollToBottom();
+   390→
+   391→    try {
+   392→        await fetch('/messages/' + CONVERSATION_ID + '/send', {
+   393→            method: 'POST',
+   394→            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+   395→            body: JSON.stringify({ body: body })
+   396→        });
+   397→    } catch (e) {
+   398→        showToast('Message not sent. Try again.');
+   399→    }
+   400→
+   401→    cancelReply();
+   402→}
+   403→
+   404→function appendMessage(body, type, isMine) {
+   405→    const chatEl = document.getElementById('chatMessages');
+   406→    const typing = document.getElementById('typingIndicator');
+   407→    const now = new Date();
+   408→    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+   409→
+   410→    let bubbleHTML = '';
+   411→    if (type === 'image') {
+   412→        bubbleHTML = `<div class="msg-image"><img src="${body}" alt="Image" onclick="viewImage('${body}')"></div>`;
+   413→    } else if (type === 'voice') {
+   414→        bubbleHTML = `
+   415→            <div class="msg-bubble px-3 py-2.5 flex items-center gap-2.5 min-w-[200px]" style="background: linear-gradient(135deg, #834ae5, #6b21a8);">
+   416→                <button class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background: rgba(255,255,255,0.15);"><span class="material-icons-round text-white text-sm">play_arrow</span></button>
+   417→                <div class="flex-1"><div class="voice-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+   418→                <span class="text-white/60 text-[10px]">0:12</span>
+   419→            </div>`;
+   420→    } else {
+   421→        bubbleHTML = `<div class="msg-bubble px-3.5 py-2.5"><p class="text-[13px] leading-relaxed">${escapeHtml(body)}</p></div>`;
+   422→    }
+   423→
+   424→    const wrapper = document.createElement('div');
+   425→    wrapper.className = `flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-1.5`;
+   426→    wrapper.innerHTML = `
+   427→        <div class="max-w-[78%]">
+   428→            ${bubbleHTML}
+   429→            <div class="flex items-center justify-end gap-1 mt-0.5 pr-1">
+   430→                <span class="text-[9px] text-purple-300/50">${timeStr}</span>
+   431→                <span class="material-icons-round text-[#834ae5]/60" style="font-size: 11px;">check</span>
+   432→            </div>
+   433→        </div>
+   434→    `;
+   435→    chatEl.insertBefore(wrapper, typing);
+   436→}
+   437→
+   438→function quickReply(text) {
+   439→    const input = document.getElementById('messageInput');
+   440→    if (input) { input.value = text; toggleSendBtn(); input.focus(); }
+   441→}
+   442→
+   443→function toggleSendBtn() {
+   444→    const input = document.getElementById('messageInput');
+   445→    const btn = document.getElementById('sendBtn');
+   446→    const icon = document.getElementById('sendIcon');
+   447→    if (!input || !btn || !icon) return;
+   448→    const hasText = input.value.trim().length > 0;
+   449→    btn.style.opacity = hasText ? '1' : '0.5';
+   450→    btn.classList.toggle('cursor-not-allowed', !hasText);
+   451→    icon.textContent = hasText ? 'send' : 'mic';
+   452→}
+   453→
+   454→// ===================== EMOJI =====================
+   455→function toggleEmojiPicker() {
+   456→    const picker = document.getElementById('emojiPicker');
+   457→    const attach = document.getElementById('attachMenu');
+   458→    attach.classList.add('hidden');
+   459→    picker.classList.toggle('hidden');
+   460→    if (!picker.classList.contains('hidden')) {
+   461→        document.getElementById('messageInput').focus();
+   462→    }
+   463→}
+   464→
+   465→function insertEmoji(emoji) {
+   466→    const input = document.getElementById('messageInput');
+   467→    input.value += emoji;
+   468→    input.focus();
+   469→    toggleSendBtn();
+   470→}
+   471→
+   472→// ===================== ATTACHMENTS =====================
+   473→function toggleAttachMenu() {
+   474→    const attach = document.getElementById('attachMenu');
+   475→    const emoji = document.getElementById('emojiPicker');
+   476→    emoji.classList.add('hidden');
+   477→    attach.classList.toggle('hidden');
+   478→}
+   479→
+   480→function attachImage() {
+   481→    document.getElementById('imageUpload').click();
+   482→    toggleAttachMenu();
+   483→}
+   484→
+   485→function handleImageUpload(input) {
+   486→    if (input.files && input.files[0]) {
+   487→        const file = input.files[0];
+   488→        const reader = new FileReader();
+   489→        reader.onload = async function(e) {
+   490→            appendMessage(e.target.result, 'image', true);
+   491→            scrollToBottom();
+   492→            showToast('Image sent! 📸');
+   493→        };
+   494→        reader.readAsDataURL(file);
+   495→        input.value = '';
+   496→    }
+   497→}
+   498→
+   499→function attachVoice() {
+   500→    toggleAttachMenu();
+   501→    showToast('Hold to record voice message 🎙️');
+   502→}
+   503→
+   504→function attachFile() { toggleAttachMenu(); showToast('File attachment coming soon 📎'); }
+   505→function attachLocation() { toggleAttachMenu(); showToast('Location sharing coming soon 📍'); }
+   506→function attachContact() { toggleAttachMenu(); showToast('Contact sharing coming soon 👤'); }
+   507→
+   508→// ===================== REPLY =====================
+   509→function setReply(text) {
+   510→    replyTo = text;
+   511→    document.getElementById('replyPreview').classList.remove('hidden');
+   512→    document.getElementById('replyText').textContent = text;
+   513→    document.getElementById('messageInput').focus();
+   514→}
+   515→
+   516→function cancelReply() {
+   517→    replyTo = null;
+   518→    document.getElementById('replyPreview').classList.add('hidden');
+   519→}
+   520→
+   521→// ===================== IMAGE VIEWER =====================
+   522→function viewImage(url) {
+   523→    document.getElementById('viewerImage').src = url;
+   524→    document.getElementById('imageViewer').classList.remove('hidden');
+   525→}
+   526→
+   527→function closeImageViewer() {
+   528→    document.getElementById('imageViewer').classList.add('hidden');
+   529→}
+   530→
+   531→// ===================== CHAT MENU =====================
+   532→function toggleChatMenu() { document.getElementById('chatMenu').classList.toggle('hidden'); }
+   533→function closeChatMenu() { document.getElementById('chatMenu').classList.add('hidden'); }
+   534→
+   535→function viewProfile() { showToast('Profile view coming soon'); }
+   536→function showProfileSheet() { showToast('Tap for profile details'); }
+   537→function toggleMute() { showToast('Notifications muted 🔕'); }
+   538→function searchInChat() { showToast('Search in chat coming soon 🔍'); }
+   539→function clearChat() { if (confirm('Clear all messages?')) showToast('Chat cleared'); }
+   540→function blockUser() { if (confirm('Block this user?')) showToast('User blocked'); }
+   541→function startVoiceCall() { showToast('Voice call starting... 📞'); }
+   542→function startVideoCall() { showToast('Video call starting... 📹'); }
+   543→
+   544→// ===================== UTILS =====================
+   545→function escapeHtml(text) {
+   546→    const d = document.createElement('div');
+   547→    d.textContent = text;
+   548→    return d.innerHTML;
+   549→}
+   550→
+   551→function scrollToBottom() {
+   552→    const chatEl = document.getElementById('chatMessages');
+   553→    if (chatEl) chatEl.scrollTop = chatEl.scrollHeight;
+   554→}
+   555→
+   556→function showToast(msg) {
+   557→    const existing = document.querySelector('.chat-toast');
+   558→    if (existing) existing.remove();
+   559→    const div = document.createElement('div');
+   560→    div.className = 'chat-toast fixed top-4 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-white text-sm font-medium z-[200] max-w-[90%] text-center';
+   561→    div.style.cssText = 'background: linear-gradient(135deg, #834ae5, #6b21a8); box-shadow: 0 4px 20px rgba(131,74,229,0.4);';
+   562→    div.textContent = msg;
+   563→    document.body.appendChild(div);
+   564→    setTimeout(() => { div.style.opacity = '0'; div.style.transition = 'opacity 0.3s'; setTimeout(() => div.remove(), 300); }, 2000);
+   565→}
+   566→
+   567→// Close menus on outside click
+   568→document.addEventListener('click', (e) => {
+   569→    if (!e.target.closest('#chatMenu') && !e.target.closest('[onclick*="toggleChatMenu"]')) {
+   570→        document.getElementById('chatMenu')?.classList.add('hidden');
+   571→    }
+   572→});
+   573→
+   574→// ===================== POLLING FOR NEW MESSAGES =====================
+   575→let lastMsgCount = <?= count($messages) ?>;
+   576→setInterval(async () => {
+   577→    if (!CONVERSATION_ID) return;
+   578→    try {
+   579→        const r = await fetch('/messages/' + CONVERSATION_ID + '/poll', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+   580→        const d = await r.json();
+   581→        if (d.length > lastMsgCount) {
+   582→            location.reload();
+   583→        }
+   584→    } catch(e) {}
+   585→}, 5000);
+   586→
+   587→// Show/hide typing indicator simulation
+   588→// (In production, this would come from WebSocket/polling)
+   589→setInterval(() => {
+   590→    const typing = document.getElementById('typingIndicator');
+   591→    if (typing) {
+   592→        typing.classList.add('hidden');
+   593→    }
+   594→}, 10000);
+   595→
+   596→// ===================== AUTO-SCROLL ON LOAD =====================
+   597→document.addEventListener('DOMContentLoaded', () => {
+   598→    scrollToBottom();
+   599→});
+   600→</script>
+   601→
+   602→<?php $content = ob_get_clean(); ?>
+   603→<?php require __DIR__ . '/../layouts/app.php'; ?>
+   604→

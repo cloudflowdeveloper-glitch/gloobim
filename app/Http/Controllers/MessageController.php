@@ -185,6 +185,59 @@ class MessageController extends Controller
         }
     }
 
+    public function searchUsers(): Response
+    {
+        $user = \Core\Auth::user();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthenticated'], 401);
+        }
+
+        $query = trim($_GET['q'] ?? '');
+
+        try {
+            if (strlen($query) < 1) {
+                // Empty query → return people you follow first, then random users
+                $users = Database::query(
+                    "SELECT u.id, u.name, u.username, u.avatar, u.bio, u.is_verified, 1 AS is_following
+                     FROM users u
+                     INNER JOIN followers f ON f.following_id = u.id AND f.follower_id = ?
+                     WHERE u.id != ?
+                     ORDER BY u.name ASC
+                     LIMIT 10",
+                    [$user['id'], $user['id']]
+                );
+                if (empty($users)) {
+                    $users = Database::query(
+                        "SELECT u.id, u.name, u.username, u.avatar, u.bio, u.is_verified,
+                               (SELECT COUNT(*) FROM followers WHERE follower_id = ? AND following_id = u.id) AS is_following
+                         FROM users u
+                         WHERE u.id != ? AND u.is_banned = 0
+                         ORDER BY RAND()
+                         LIMIT 8",
+                        [$user['id'], $user['id']]
+                    );
+                }
+            } else {
+                $users = Database::query(
+                    "SELECT u.id, u.name, u.username, u.avatar, u.bio, u.is_verified,
+                           (SELECT COUNT(*) FROM followers WHERE follower_id = ? AND following_id = u.id) AS is_following
+                     FROM users u
+                     WHERE u.id != ?
+                       AND (u.username LIKE ? OR u.name LIKE ?)
+                     ORDER BY
+                       CASE WHEN u.username LIKE ? THEN 0 ELSE 1 END,
+                       CASE WHEN u.name LIKE ? THEN 0 ELSE 1 END,
+                       u.name ASC
+                     LIMIT 15",
+                    [$user['id'], $user['id'], "%{$query}%", "%{$query}%", "{$query}%", "{$query}%"]
+                );
+            }
+            return $this->json($users);
+        } catch (\Exception $e) {
+            return $this->json([]);
+        }
+    }
+
     public function poll($id): Response
     {
         $user = \Core\Auth::user();

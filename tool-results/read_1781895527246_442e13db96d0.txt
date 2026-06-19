@@ -1,0 +1,402 @@
+   200→
+   201→CREATE TABLE `livestreams` (
+   202→  `id` bigint(20) UNSIGNED NOT NULL,
+   203→  `user_id` bigint(20) UNSIGNED NOT NULL,
+   204→  `title` varchar(255) NOT NULL,
+   205→  `description` text DEFAULT NULL,
+   206→  `thumbnail` varchar(500) DEFAULT NULL,
+   207→  `stream_key` varchar(100) DEFAULT NULL,
+   208→  `stream_url` varchar(500) DEFAULT NULL,
+   209→  `viewers` bigint(20) UNSIGNED DEFAULT 0,
+   210→  `peak_viewers` bigint(20) UNSIGNED DEFAULT 0,
+   211→  `total_gifts` bigint(20) UNSIGNED DEFAULT 0,
+   212→  `gift_earnings` decimal(15,2) DEFAULT 0.00,
+   213→  `status` enum('scheduled','live','ended') DEFAULT 'scheduled',
+   214→  `started_at` datetime DEFAULT NULL,
+   215→  `ended_at` datetime DEFAULT NULL,
+   216→  `created_at` datetime DEFAULT current_timestamp(),
+   217→  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+   218→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   219→
+   220→--
+   221→-- Dumping data for table `livestreams`
+   222→--
+   223→
+   224→INSERT INTO `livestreams` (`id`, `user_id`, `title`, `description`, `thumbnail`, `stream_key`, `stream_url`, `viewers`, `peak_viewers`, `total_gifts`, `gift_earnings`, `status`, `started_at`, `ended_at`, `created_at`, `updated_at`) VALUES
+   225→(1, 2, 'Late Night Music Session', 'Live music and chat ????', 'https://placehold.co/400x225/d97706/ffffff?text=LIVE+1', NULL, NULL, 4200, 8500, 0, 0.00, 'live', '2026-05-21 14:52:18', NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   226→(2, 2, 'Q&A: Starting Your Creator Journey', 'Ask me anything about content creation', 'https://placehold.co/400x225/6d28d9/ffffff?text=LIVE+2', NULL, NULL, 2800, 5100, 0, 0.00, 'live', '2026-05-21 14:52:18', NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18');
+   227→
+   228→-- --------------------------------------------------------
+   229→
+   230→--
+   231→-- Table structure for table `marketplace_categories`
+   232→--
+   233→
+   234→CREATE TABLE `marketplace_categories` (
+   235→  `id` bigint(20) UNSIGNED NOT NULL,
+   236→  `name` varchar(100) NOT NULL,
+   237→  `slug` varchar(100) DEFAULT NULL,
+   238→  `icon` varchar(100) DEFAULT NULL,
+   239→  `cover_url` varchar(500) DEFAULT NULL,
+   240→  `product_count` int(10) UNSIGNED DEFAULT 0,
+   241→  `sort_order` int(10) UNSIGNED DEFAULT 0,
+   242→  `is_active` tinyint(1) DEFAULT 1,
+   243→  `created_at` datetime DEFAULT current_timestamp(),
+   244→  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+   245→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   246→
+   247→--
+   248→-- Dumping data for table `marketplace_categories`
+   249→--
+   250→
+   251→INSERT INTO `marketplace_categories` (`id`, `name`, `slug`, `icon`, `cover_url`, `product_count`, `sort_order`, `is_active`, `created_at`, `updated_at`) VALUES
+   252→(1, 'Electronics', 'electronics', 'electronics', '/uploads/marketplace/electronics.jpg', 24, 1, 1, '2026-06-05 15:39:58', '2026-06-05 15:39:58'),
+   253→(2, 'Fashion', 'fashion', 'fashion', '/uploads/marketplace/fashion.jpg', 18, 2, 1, '2026-06-05 15:39:58', '2026-06-05 15:39:58'),
+   254→(3, 'Home', 'home', 'home', '/uploads/marketplace/home.jpg', 12, 3, 1, '2026-06-05 15:39:58', '2026-06-05 15:39:58'),
+   255→(4, 'Beauty', 'beauty', 'beauty', '/uploads/marketplace/beauty.jpg', 9, 4, 1, '2026-06-05 15:39:58', '2026-06-05 15:39:58'),
+   256→(5, 'Sports', 'sports', 'sports', '/uploads/marketplace/sports.jpg', 7, 5, 1, '2026-06-05 15:39:58', '2026-06-05 15:39:58'),
+   257→(6, 'Gaming', 'gaming', 'gaming', '/uploads/marketplace/gaming.jpg', 15, 6, 1, '2026-06-05 15:39:58', '2026-06-05 15:39:58'),
+   258→(7, 'Books', 'books', 'books', '/uploads/marketplace/books.jpg', 5, 7, 1, '2026-06-05 15:39:58', '2026-06-05 15:39:58'),
+   259→(8, 'Auto', 'auto', 'auto', '/uploads/marketplace/auto.jpg', 3, 8, 1, '2026-06-05 15:39:58', '2026-06-05 15:39:58');
+   260→
+   261→-- --------------------------------------------------------
+   262→
+   263→--
+   264→-- Table structure for table `marketplace_listings`
+   265→--
+   266→
+   267→CREATE TABLE `marketplace_listings` (
+   268→  `id` bigint(20) UNSIGNED NOT NULL,
+   269→  `user_id` bigint(20) UNSIGNED NOT NULL,
+   270→  `title` varchar(255) NOT NULL,
+   271→  `description` text DEFAULT NULL,
+   272→  `price` decimal(15,2) NOT NULL,
+   273→  `currency` varchar(10) DEFAULT 'KES',
+   274→  `image_url` varchar(500) DEFAULT NULL,
+   275→  `images` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`images`)),
+   276→  `category` varchar(100) DEFAULT 'Other',
+   277→  `condition` enum('new','like_new','good','fair','used') DEFAULT 'good',
+   278→  `location` varchar(255) DEFAULT NULL,
+   279→  `phone` varchar(30) DEFAULT NULL,
+   280→  `views` bigint(20) UNSIGNED DEFAULT 0,
+   281→  `likes` bigint(20) UNSIGNED DEFAULT 0,
+   282→  `sold` tinyint(1) DEFAULT 0,
+   283→  `status` enum('active','sold','deleted','expired') DEFAULT 'active',
+   284→  `expires_at` datetime DEFAULT NULL,
+   285→  `created_at` datetime DEFAULT current_timestamp(),
+   286→  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+   287→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   288→
+   289→--
+   290→-- Dumping data for table `marketplace_listings`
+   291→--
+   292→
+   293→INSERT INTO `marketplace_listings` (`id`, `user_id`, `title`, `description`, `price`, `currency`, `image_url`, `images`, `category`, `condition`, `location`, `phone`, `views`, `likes`, `sold`, `status`, `expires_at`, `created_at`, `updated_at`) VALUES
+   294→(1, 2, 'iPhone 15 Pro Max 256GB', 'Brand new, box sealed. Natural Titanium color.', 1199.00, 'USD', '/uploads/marketplace/product_iphone.jpg', NULL, 'Electronics', 'new', 'Nairobi', '+254712345678', 2340, 0, 0, 'active', NULL, '2026-06-04 15:39:58', '2026-06-05 15:39:58'),
+   295→(2, 2, 'Sony WH-1000XM5 Headphones', 'Noise-cancelling, premium audio quality. Used 2 weeks.', 349.00, 'USD', '/uploads/marketplace/product_headphones.jpg', NULL, 'Electronics', 'like_new', 'Nairobi', '+254712345678', 5123, 0, 1, 'sold', NULL, '2026-06-03 15:39:58', '2026-06-06 04:09:51'),
+   296→(3, 2, 'MacBook Air M3 - 16GB RAM', 'Lightly used, battery cycle: 12. Starlight finish.', 1099.00, 'USD', '/uploads/marketplace/product_laptop.jpg', NULL, 'Electronics', 'good', 'Nairobi', '+254712345678', 1892, 0, 0, 'active', NULL, '2026-06-02 15:39:58', '2026-06-09 00:27:33'),
+   297→(4, 2, 'Apple Watch Ultra 2', '49mm Titanium, GPS + Cellular. Brand new.', 799.00, 'USD', '/uploads/marketplace/product_watch.jpg', NULL, 'Electronics', 'new', 'Nairobi', '+254712345678', 980, 0, 0, 'active', NULL, '2026-06-01 15:39:58', '2026-06-05 15:39:58'),
+   298→(5, 2, 'Nike Air Max 90 OG', 'Classic infrared colorway, DS (Deadstock).', 130.00, 'USD', '/uploads/marketplace/product_sneakers.jpg', NULL, 'Fashion', 'new', 'Mombasa', '+254723456789', 3212, 0, 0, 'active', NULL, '2026-06-04 15:39:58', '2026-06-16 14:48:11'),
+   299→(6, 2, 'Canon EOS R6 Mark II', 'Full-frame mirrorless, 24.2MP, with RF 24-105mm lens kit.', 2499.00, 'USD', '/uploads/marketplace/product_camera.jpg', NULL, 'Electronics', 'like_new', 'Nairobi', '+254734567890', 421, 0, 0, 'active', NULL, '2026-06-03 15:39:58', '2026-06-16 13:24:07'),
+   300→(7, 2, 'Ray-Ban Aviator Classic', 'Original polarized G-15 lenses. Gold frame.', 163.00, 'USD', '/uploads/marketplace/product_sunglasses.jpg', NULL, 'Fashion', 'new', 'Kisumu', '+254745678901', 1560, 0, 0, 'active', NULL, '2026-05-31 15:39:58', '2026-06-05 15:39:58'),
+   301→(8, 2, 'JBL Flip 6 Portable Speaker', 'IP67 waterproof, 12 hours playtime, black.', 129.00, 'USD', '/uploads/marketplace/product_speaker.jpg', NULL, 'Electronics', 'good', 'Nairobi', '+254756789012', 2890, 0, 0, 'active', NULL, '2026-05-30 15:39:58', '2026-06-05 15:39:58'),
+   302→(9, 2, 'North Face Nuptse 1996 Jacket', 'Retro Nuptse, size L, black. Excellent condition.', 280.00, 'USD', '/uploads/marketplace/product_jacket.jpg', NULL, 'Fashion', 'good', 'Nairobi', '+254767890123', 781, 0, 0, 'active', NULL, '2026-06-02 15:39:58', '2026-06-06 12:40:18'),
+   303→(10, 2, 'iPad Air M2 256GB', '11-inch, Wi-Fi + Cellular, Space Gray.', 599.00, 'USD', '/uploads/marketplace/product_tablet.jpg', NULL, 'Electronics', 'like_new', 'Mombasa', '+254778901234', 1340, 0, 0, 'active', NULL, '2026-06-01 15:39:58', '2026-06-05 15:39:58'),
+   304→(11, 2, 'Herman Miller Aeron Chair', 'Size B, fully loaded, graphite frame.', 450.00, 'USD', '/uploads/marketplace/product_chair.jpg', NULL, 'Home', 'good', 'Nairobi', '+254789012345', 670, 0, 0, 'active', NULL, '2026-05-29 15:39:58', '2026-06-05 15:39:58'),
+   305→(12, 2, 'Vintage Leather Backpack', 'Hand-stitched genuine leather, 15\" laptop fits.', 89.00, 'USD', '/uploads/marketplace/product_backpack.jpg', NULL, 'Fashion', 'good', 'Kisumu', '+254790123456', 542, 0, 0, 'active', NULL, '2026-05-28 15:39:58', '2026-06-16 14:51:36');
+   306→
+   307→-- --------------------------------------------------------
+   308→
+   309→--
+   310→-- Table structure for table `marketplace_reviews`
+   311→--
+   312→
+   313→CREATE TABLE `marketplace_reviews` (
+   314→  `id` bigint(20) UNSIGNED NOT NULL,
+   315→  `listing_id` bigint(20) UNSIGNED NOT NULL,
+   316→  `reviewer_id` bigint(20) UNSIGNED NOT NULL,
+   317→  `rating` tinyint(3) UNSIGNED DEFAULT 5,
+   318→  `comment` text DEFAULT NULL,
+   319→  `is_verified` tinyint(1) DEFAULT 0,
+   320→  `created_at` datetime DEFAULT current_timestamp(),
+   321→  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+   322→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   323→
+   324→-- --------------------------------------------------------
+   325→
+   326→--
+   327→-- Table structure for table `marketplace_wishlist`
+   328→--
+   329→
+   330→CREATE TABLE `marketplace_wishlist` (
+   331→  `id` bigint(20) UNSIGNED NOT NULL,
+   332→  `user_id` bigint(20) UNSIGNED NOT NULL,
+   333→  `listing_id` bigint(20) UNSIGNED NOT NULL,
+   334→  `created_at` datetime DEFAULT current_timestamp()
+   335→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   336→
+   337→--
+   338→-- Dumping data for table `marketplace_wishlist`
+   339→--
+   340→
+   341→INSERT INTO `marketplace_wishlist` (`id`, `user_id`, `listing_id`, `created_at`) VALUES
+   342→(0, 2, 12, '2026-06-16 14:51:59');
+   343→
+   344→-- --------------------------------------------------------
+   345→
+   346→--
+   347→-- Table structure for table `messages`
+   348→--
+   349→
+   350→CREATE TABLE `messages` (
+   351→  `id` bigint(20) UNSIGNED NOT NULL,
+   352→  `conversation_id` bigint(20) UNSIGNED NOT NULL,
+   353→  `sender_id` bigint(20) UNSIGNED NOT NULL,
+   354→  `body` text NOT NULL,
+   355→  `attachment_url` varchar(500) DEFAULT NULL,
+   356→  `is_read` tinyint(1) DEFAULT 0,
+   357→  `created_at` datetime DEFAULT current_timestamp()
+   358→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   359→
+   360→-- --------------------------------------------------------
+   361→
+   362→--
+   363→-- Table structure for table `migrations`
+   364→--
+   365→
+   366→CREATE TABLE `migrations` (
+   367→  `id` bigint(20) UNSIGNED NOT NULL,
+   368→  `migration` varchar(255) NOT NULL,
+   369→  `batch` int(10) UNSIGNED DEFAULT 1,
+   370→  `ran_at` datetime DEFAULT current_timestamp()
+   371→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   372→
+   373→-- --------------------------------------------------------
+   374→
+   375→--
+   376→-- Table structure for table `music_featured`
+   377→--
+   378→
+   379→CREATE TABLE `music_featured` (
+   380→  `id` bigint(20) UNSIGNED NOT NULL,
+   381→  `title` varchar(255) NOT NULL,
+   382→  `description` text DEFAULT NULL,
+   383→  `cover_url` varchar(500) DEFAULT NULL,
+   384→  `author` varchar(255) DEFAULT NULL,
+   385→  `track_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`track_ids`)),
+   386→  `listeners` bigint(20) UNSIGNED DEFAULT 0,
+   387→  `is_active` tinyint(1) DEFAULT 1,
+   388→  `starts_at` datetime DEFAULT NULL,
+   389→  `ends_at` datetime DEFAULT NULL,
+   390→  `created_at` datetime DEFAULT current_timestamp(),
+   391→  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+   392→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   393→
+   394→--
+   395→-- Dumping data for table `music_featured`
+   396→--
+   397→
+   398→INSERT INTO `music_featured` (`id`, `title`, `description`, `cover_url`, `author`, `track_ids`, `listeners`, `is_active`, `starts_at`, `ends_at`, `created_at`, `updated_at`) VALUES
+   399→(1, 'African Heat 2025', 'Hottest African tracks right now', '/uploads/music/covers/featured_banner.jpg', 'DTTube Music', '[1,2,3,4,5]', 12400, 1, '2026-05-01 00:00:00', '2026-06-30 23:59:59', '2026-05-21 14:52:18', '2026-05-21 14:52:18');
+   400→
+   401→-- --------------------------------------------------------
+   402→
+   403→--
+   404→-- Table structure for table `music_genres`
+   405→--
+   406→
+   407→CREATE TABLE `music_genres` (
+   408→  `id` bigint(20) UNSIGNED NOT NULL,
+   409→  `name` varchar(100) NOT NULL,
+   410→  `slug` varchar(100) DEFAULT NULL,
+   411→  `color` varchar(100) DEFAULT NULL,
+   412→  `icon` varchar(50) DEFAULT NULL,
+   413→  `cover_url` varchar(500) DEFAULT NULL,
+   414→  `track_count` int(10) UNSIGNED DEFAULT 0,
+   415→  `is_active` tinyint(1) DEFAULT 1,
+   416→  `created_at` datetime DEFAULT current_timestamp(),
+   417→  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+   418→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   419→
+   420→--
+   421→-- Dumping data for table `music_genres`
+   422→--
+   423→
+   424→INSERT INTO `music_genres` (`id`, `name`, `slug`, `color`, `icon`, `cover_url`, `track_count`, `is_active`, `created_at`, `updated_at`) VALUES
+   425→(1, 'Afrobeats', 'afrobeats', '#f97316', 'whatshot', '/uploads/music/covers/genre_1.jpg', 6, 1, '2026-05-21 14:52:18', '2026-06-16 21:21:05'),
+   426→(2, 'Bongo Flava', 'bongo-flava', '#22c55e', 'music_note', '/uploads/music/covers/genre_2.jpg', 1, 1, '2026-05-21 14:52:18', '2026-06-16 21:21:05'),
+   427→(3, 'Hip Hop', 'hip-hop', '#a855f7', 'headset', '/uploads/music/covers/genre_3.jpg', 1, 1, '2026-05-21 14:52:18', '2026-06-16 21:21:05'),
+   428→(4, 'RnB / Soul', 'rnb-soul', '#ec4899', 'favorite', '/uploads/music/covers/genre_4.jpg', 2, 1, '2026-05-21 14:52:18', '2026-06-16 21:21:05'),
+   429→(5, 'Gospel', 'gospel', '#f59e0b', 'church', '/uploads/music/covers/genre_5.jpg', 0, 1, '2026-05-21 14:52:18', '2026-06-16 21:21:05'),
+   430→(6, 'Dancehall', 'dancehall', '#06b6d4', 'celebration', '/uploads/music/covers/genre_6.jpg', 2, 1, '2026-05-21 14:52:18', '2026-06-16 21:21:05'),
+   431→(7, 'Amapiano', 'amapiano', '#ef4444', 'nightlife', '/uploads/music/covers/genre_7.jpg', 2, 1, '2026-05-21 14:52:18', '2026-06-16 21:21:05'),
+   432→(8, 'Gengetone', 'gengetone', '#6366f1', 'album', '/uploads/music/covers/genre_8.jpg', 1, 1, '2026-05-21 14:52:18', '2026-06-16 21:21:05');
+   433→
+   434→-- --------------------------------------------------------
+   435→
+   436→--
+   437→-- Table structure for table `music_playlists`
+   438→--
+   439→
+   440→CREATE TABLE `music_playlists` (
+   441→  `id` bigint(20) UNSIGNED NOT NULL,
+   442→  `name` varchar(255) NOT NULL,
+   443→  `description` text DEFAULT NULL,
+   444→  `cover_url` varchar(500) DEFAULT NULL,
+   445→  `track_count` int(10) UNSIGNED DEFAULT 0,
+   446→  `author_name` varchar(255) DEFAULT NULL,
+   447→  `author_id` bigint(20) UNSIGNED DEFAULT NULL,
+   448→  `followers` bigint(20) UNSIGNED DEFAULT 0,
+   449→  `is_curated` tinyint(1) DEFAULT 0,
+   450→  `status` enum('public','private','unlisted') DEFAULT 'public',
+   451→  `created_at` datetime DEFAULT current_timestamp(),
+   452→  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+   453→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   454→
+   455→--
+   456→-- Dumping data for table `music_playlists`
+   457→--
+   458→
+   459→INSERT INTO `music_playlists` (`id`, `name`, `description`, `cover_url`, `track_count`, `author_name`, `author_id`, `followers`, `is_curated`, `status`, `created_at`, `updated_at`) VALUES
+   460→(1, 'African Heat', 'Hottest African tracks right now', '/uploads/music/playlists/playlist_1.jpg', 45, 'DTTube Music', 1, 32000, 1, 'public', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   461→(2, 'Chill Vibes', 'Relax and unwind', '/uploads/music/playlists/playlist_2.jpg', 32, 'Zara Ke', 2, 18500, 1, 'public', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   462→(3, 'Workout Energy', 'High energy for your workout', '/uploads/music/playlists/playlist_3.jpg', 28, 'DTTube Music', 1, 14200, 1, 'public', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   463→(4, 'Karaoke Classics', 'Sing along favorites', '/uploads/music/playlists/playlist_4.jpg', 50, 'DTTube Music', 1, 45000, 1, 'public', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   464→(5, 'New Releases KE', 'Fresh from Kenya', '/uploads/music/playlists/playlist_5.jpg', 18, 'Curated', NULL, 8900, 1, 'public', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   465→(6, 'Bongo Flava Mix', 'Best of Bongo Flava', '/uploads/music/playlists/playlist_6.jpg', 38, 'DTTube Music', 1, 27600, 1, 'public', '2026-05-21 14:52:18', '2026-05-21 14:52:18');
+   466→
+   467→-- --------------------------------------------------------
+   468→
+   469→--
+   470→-- Table structure for table `music_tracks`
+   471→--
+   472→
+   473→CREATE TABLE `music_tracks` (
+   474→  `id` bigint(20) UNSIGNED NOT NULL,
+   475→  `title` varchar(255) NOT NULL,
+   476→  `artist_name` varchar(255) DEFAULT NULL,
+   477→  `artist_id` bigint(20) UNSIGNED DEFAULT NULL,
+   478→  `artist_avatar` varchar(500) DEFAULT NULL,
+   479→  `cover_url` varchar(500) DEFAULT NULL,
+   480→  `audio_url` varchar(500) DEFAULT NULL,
+   481→  `video_url` varchar(500) DEFAULT NULL,
+   482→  `duration` int(10) UNSIGNED DEFAULT 0,
+   483→  `genre_id` bigint(20) UNSIGNED DEFAULT NULL,
+   484→  `plays` bigint(20) UNSIGNED DEFAULT 0,
+   485→  `likes` bigint(20) UNSIGNED DEFAULT 0,
+   486→  `shares` bigint(20) UNSIGNED DEFAULT 0,
+   487→  `downloads` bigint(20) UNSIGNED DEFAULT 0,
+   488→  `is_verified` tinyint(1) DEFAULT 0,
+   489→  `is_featured` tinyint(1) DEFAULT 0,
+   490→  `is_explicit` tinyint(1) DEFAULT 0,
+   491→  `status` enum('draft','published','unlisted','deleted') DEFAULT 'draft',
+   492→  `published_at` datetime DEFAULT NULL,
+   493→  `created_at` datetime DEFAULT current_timestamp(),
+   494→  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+   495→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   496→
+   497→--
+   498→-- Dumping data for table `music_tracks`
+   499→--
+   500→
+   501→INSERT INTO `music_tracks` (`id`, `title`, `artist_name`, `artist_id`, `artist_avatar`, `cover_url`, `audio_url`, `video_url`, `duration`, `genre_id`, `plays`, `likes`, `shares`, `downloads`, `is_verified`, `is_featured`, `is_explicit`, `status`, `published_at`, `created_at`, `updated_at`) VALUES
+   502→(1, 'Kukua (Remix)', 'Zara Ke', 2, '/uploads/music/artists/avatar_1.jpg', '/uploads/music/covers/track_1.jpg', '/uploads/music/audio/kukua_remix.mp3', '/uploads/music/video/kukua_remix.mp4', 214, 1, 2450004, 89001, 12400, 45000, 1, 1, 0, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-06-16 20:25:32'),
+   503→(2, 'Sauti Ya Nairobi', 'DJ MixMaster', 2, '/uploads/music/artists/avatar_2.jpg', '/uploads/music/covers/track_2.jpg', '/uploads/music/audio/sauti_ya_nairobi.mp3', '/uploads/music/video/sauti_ya_nairobi.mp4', 198, 1, 1850002, 67000, 8900, 32000, 1, 1, 0, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-06-16 19:47:00'),
+   504→(3, 'Late Night Vibes', 'Neo Soundz', 2, '/uploads/music/artists/avatar_3.jpg', '/uploads/music/covers/track_3.jpg', '/uploads/music/audio/late_night_vibes.mp3', '/uploads/music/video/late_night_vibes.mp4', 247, 3, 1200001, 45000, 5600, 21000, 1, 0, 0, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-06-16 20:53:20'),
+   505→(4, 'African Dream', 'Kilele', 2, '/uploads/music/artists/avatar_4.jpg', '/uploads/music/covers/track_4.jpg', '/uploads/music/audio/african_dream.mp3', '/uploads/music/video/african_dream.mp4', 232, 1, 980000, 34000, 4300, 18000, 0, 1, 0, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   506→(5, 'Sherehe', 'Fiesta Band', 2, '/uploads/music/artists/avatar_5.jpg', '/uploads/music/covers/track_5.jpg', '/uploads/music/audio/sherehe.mp3', '/uploads/music/video/sherehe.mp4', 189, 2, 890000, 28000, 3200, 14000, 1, 0, 0, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   507→(6, 'Nakupenda', 'Aisha Flow', 2, '/uploads/music/artists/avatar_6.jpg', '/uploads/music/covers/track_6.jpg', '/uploads/music/audio/nakupenda.mp3', '/uploads/music/video/nakupenda.mp4', 205, 4, 760000, 22000, 2100, 9800, 1, 0, 0, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   508→(7, 'Mambo Bora', 'MC Rasta', 2, '/uploads/music/artists/avatar_7.jpg', '/uploads/music/covers/track_7.jpg', '/uploads/music/audio/mambo_bora.mp3', '/uploads/music/video/mambo_bora.mp4', 176, 8, 540000, 15000, 1800, 7600, 0, 0, 1, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   509→(8, 'Safari Sounds', 'WildBeats', 2, '/uploads/music/artists/avatar_8.jpg', '/uploads/music/covers/track_8.jpg', '/uploads/music/audio/safari_sounds.mp3', '/uploads/music/video/safari_sounds.mp4', 263, 7, 430001, 12000, 1500, 6200, 0, 0, 0, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-06-16 19:46:53'),
+   510→(9, 'Leo Niko Ready', 'Bravo Kid', 2, '/uploads/music/artists/avatar_9.jpg', '/uploads/music/covers/track_9.jpg', '/uploads/music/audio/leo_niko_ready.mp3', '/uploads/music/video/leo_niko_ready.mp4', 192, 6, 380000, 11000, 1200, 5400, 1, 0, 1, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   511→(10, 'Ulimi Wangu', 'Lena Moon', 2, '/uploads/music/artists/avatar_10.jpg', '/uploads/music/covers/track_10.jpg', '/uploads/music/audio/ulimi_wangu.mp3', '/uploads/music/video/ulimi_wangu.mp4', 228, 4, 310000, 9800, 900, 4200, 0, 1, 0, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+   512→(0, 'Lagos Nights', 'DJ Pulse', 6, NULL, '/uploads/music/covers/lagos_nights.jpg', '/uploads/music/audio/lagos_nights.mp3', NULL, 245, 1, 450000, 34000, 12000, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   513→(0, 'Sunset in Nairobi', 'DJ Pulse ft. Zara Ke', 6, NULL, '/uploads/music/covers/sunset_nairobi.jpg', '/uploads/music/audio/sunset_nairobi.mp3', NULL, 198, 7, 320000, 28000, 8900, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   514→(0, 'Afro Groove', 'DJ Pulse', 6, NULL, '/uploads/music/covers/afro_groove.jpg', '/uploads/music/audio/afro_groove.mp3', NULL, 210, 1, 210000, 18000, 6700, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   515→(0, 'Island Breeze', 'DJ Pulse', 6, NULL, '/uploads/music/covers/island_breeze.jpg', '/uploads/music/audio/island_breeze.mp3', NULL, 187, 6, 180000, 15000, 5400, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   516→(0, 'Kitchen Beats', 'Chef Kwame', 5, NULL, '/uploads/music/covers/kitchen_beats.jpg', '/uploads/music/audio/kitchen_beats.mp3', NULL, 156, NULL, 89000, 7800, 2100, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   517→(0, 'Workout Fire', 'Fit Sarah', 7, NULL, '/uploads/music/covers/workout_fire.jpg', '/uploads/music/audio/workout_fire.mp3', NULL, 225, NULL, 560000, 45000, 18900, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   518→(0, 'Morning Hustle', 'Fit Sarah', 7, NULL, '/uploads/music/covers/morning_hustle.jpg', '/uploads/music/audio/morning_hustle.mp3', NULL, 178, 1, 320000, 24000, 8700, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   519→(0, 'Road Trip Anthem', 'Travel Dave', 8, NULL, '/uploads/music/covers/road_trip.jpg', '/uploads/music/audio/road_trip.mp3', NULL, 234, NULL, 210000, 12000, 4500, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   520→(0, 'Ocean Waves', 'Travel Dave', 8, NULL, '/uploads/music/covers/ocean_waves.jpg', '/uploads/music/audio/ocean_waves.mp3', NULL, 267, NULL, 98000, 8700, 3200, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20'),
+   521→(0, 'Digital Dreams', 'Marcus Tech', 3, NULL, '/uploads/music/covers/digital_dreams.jpg', '/uploads/music/audio/digital_dreams.mp3', NULL, 190, NULL, 145000, 12000, 4500, 0, 1, 0, 0, 'published', NULL, '2026-06-16 18:22:20', '2026-06-16 18:22:20');
+   522→
+   523→-- --------------------------------------------------------
+   524→
+   525→--
+   526→-- Table structure for table `notifications`
+   527→--
+   528→
+   529→CREATE TABLE `notifications` (
+   530→  `id` bigint(20) UNSIGNED NOT NULL,
+   531→  `user_id` bigint(20) UNSIGNED NOT NULL,
+   532→  `type` varchar(50) NOT NULL,
+   533→  `title` varchar(255) DEFAULT NULL,
+   534→  `body` text DEFAULT NULL,
+   535→  `data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`data`)),
+   536→  `is_read` tinyint(1) DEFAULT 0,
+   537→  `created_at` datetime DEFAULT current_timestamp()
+   538→) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+   539→
+   540→--
+   541→-- Dumping data for table `notifications`
+   542→--
+   543→
+   544→INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `body`, `data`, `is_read`, `created_at`) VALUES
+   545→(1, 1, 'welcome', 'Welcome to DTTube!', 'Your admin account is ready.', NULL, 0, '2026-05-21 14:52:18'),
+   546→(2, 2, 'verification', 'Account Verified!', 'Your creator account has been verified.', NULL, 0, '2026-05-21 14:52:18'),
+   547→(3, 1, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-12 20:49:42'),
+   548→(0, 1, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:02:35'),
+   549→(0, 1, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:17:45'),
+   550→(0, 3, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:24:15'),
+   551→(0, 3, 'like', 'Post Liked', 'Zara Ke liked your post.', '{\"from_user_id\":2,\"post_id\":0}', 0, '2026-06-16 18:24:18'),
+   552→(0, 4, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:24:24'),
+   553→(0, 4, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:24:32'),
+   554→(0, 6, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:24:52'),
+   555→(0, 5, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:24:56'),
+   556→(0, 3, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:28:37'),
+   557→(0, 7, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:28:49'),
+   558→(0, 3, 'share', 'Post Shared', 'Zara Ke shared your post.', '{\"from_user_id\":2,\"post_id\":0}', 0, '2026-06-16 18:30:26'),
+   559→(0, 8, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 18:31:20'),
+   560→(0, 3, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 19:05:52'),
+   561→(0, 4, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 19:05:56'),
+   562→(0, 5, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 19:05:59'),
+   563→(0, 3, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 19:22:04'),
+   564→(0, 6, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 19:22:11'),
+   565→(0, 7, 'follow', 'New Follower', 'Zara Ke started following you.', '{\"follower_id\":2,\"follower_name\":\"Zara Ke\"}', 0, '2026-06-16 19:22:14'),
+   566→(0, 3, 'like', 'Post Liked', 'Zara Ke liked your post.', '{\"from_user_id\":2,\"post_id\":0}', 0, '2026-06-18 08:26:54');
+   567→
+   568→-- --------------------------------------------------------
+   569→
+   570→--
+   571→-- Table structure for table `orders`
+   572→--
+   573→
+   574→CREATE TABLE `orders` (
+   575→  `id` bigint(20) UNSIGNED NOT NULL,
+   576→  `order_number` varchar(20) NOT NULL,
+   577→  `user_id` bigint(20) UNSIGNED NOT NULL,
+   578→  `status` enum('pending','confirmed','processing','shipped','delivered','cancelled') DEFAULT 'pending',
+   579→  `subtotal` decimal(12,2) NOT NULL DEFAULT 0.00,
+   580→  `shipping_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+   581→  `tax` decimal(10,2) NOT NULL DEFAULT 0.00,
+   582→  `total` decimal(12,2) NOT NULL DEFAULT 0.00,
+   583→  `currency` varchar(10) DEFAULT 'USD',
+   584→  `billing_name` varchar(255) DEFAULT NULL,
+   585→  `billing_email` varchar(255) DEFAULT NULL,
+   586→  `billing_phone` varchar(30) DEFAULT NULL,
+   587→  `billing_address` text DEFAULT NULL,
+   588→  `billing_city` varchar(100) DEFAULT NULL,
+   589→  `billing_state` varchar(100) DEFAULT NULL,
+   590→  `billing_zip` varchar(20) DEFAULT NULL,
+   591→  `billing_country` varchar(100) DEFAULT 'Kenya',
+   592→  `delivery_name` varchar(255) DEFAULT NULL,
+   593→  `delivery_phone` varchar(30) DEFAULT NULL,
+   594→  `delivery_address` text DEFAULT NULL,
+   595→  `delivery_city` varchar(100) DEFAULT NULL,
+   596→  `delivery_state` varchar(100) DEFAULT NULL,
+   597→  `delivery_zip` varchar(20) DEFAULT NULL,
+   598→  `delivery_country` varchar(100) DEFAULT NULL,
+   599→  `delivery_instructions` text DEFAULT NULL,
+
+[showing lines 200-599 of 1287; use offset=600 with limit to continue reading]

@@ -102,6 +102,7 @@ Router::middleware('auth')->group([], function () {
     Router::post('/tip/{type}/{id}', [InteractionController::class, 'sendTip']);
 
     Router::get('/messages', [MessageController::class, 'index']);
+    Router::get('/messages/search', [MessageController::class, 'searchUsers']);
     Router::get('/messages/{id}', [MessageController::class, 'show']);
     Router::get('/messages/{id}/poll', [MessageController::class, 'poll']);
     Router::post('/messages/{id}', [MessageController::class, 'send']);
