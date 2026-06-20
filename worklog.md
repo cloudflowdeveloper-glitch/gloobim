@@ -20,3 +20,24 @@ Stage Summary:
 - `app/Http/Controllers/MarketplaceController.php`: Rewrote `index()` and `show()` to use marketplace_categories table, improved image URL resolution
 - `resources/views/marketplace/index.php`: Updated category icon to use `cover_url` from DB
 - `app/Http/Controllers/VideoController.php`: Added multi-level fallback for creators to watch
+
+---
+Task ID: 2
+Agent: main (with 3 parallel subagents)
+Task: Marketplace categories DB integration, profile data from DB, avatar upload
+
+Work Log:
+- Updated MarketplaceController::categories() to query market_items table for Digital Products (type='digital') and Creator & Brands (type='service') sections
+- Updated CreatorController::profile() with 7 new DB queries: followingCount, reelsCount, musicCount, marketplaceCount, totalViews, totalLikes, walletBalance
+- Added CreatorController::uploadAvatar() method for profile image changes
+- Updated profile view to show 7 dynamic metric cards from DB instead of hardcoded values
+- Added camera icon overlay on avatar for image change (own profile only)
+- Added same avatar change functionality to Settings page
+- Added POST /profile/upload-avatar route
+- Pushed to GitHub: cde8747
+
+Stage Summary:
+- Files modified: CreatorController.php, MarketplaceController.php, creator/profile.php, auth/settings.php, routes/web.php
+- Digital Products and Creator & Brands sections now query market_items table with fallback
+- Profile page metrics are fully database-driven
+- Avatar upload works via AJAX POST to /profile/upload-avatar
