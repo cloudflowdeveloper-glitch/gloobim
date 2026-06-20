@@ -380,6 +380,18 @@ $level = $currentUser['creator_level'] ?? 1;
                 </div>
                 <span class="material-icons-round text-zinc-600 text-lg">chevron_right</span>
             </a>
+            <?php if ($currentUser && ($currentUser['role'] ?? '') === 'admin'): ?>
+            <a href="/admin" class="menu-item flex items-center gap-3 px-3 py-2.5 rounded-xl">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(131,74,229,0.15);">
+                    <span class="material-icons-round text-[#834ae5] text-lg">admin_panel_settings</span>
+                </div>
+                <div class="flex-1">
+                    <p class="text-white text-xs font-semibold">Admin Panel</p>
+                    <p class="text-zinc-500 text-[9px]">Manage platform</p>
+                </div>
+                <span class="material-icons-round text-zinc-600 text-lg">chevron_right</span>
+            </a>
+            <?php endif; ?>
             <?php if ($currentUser): ?>
             <a href="/logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="menu-item flex items-center gap-3 px-3 py-2.5 rounded-xl">
                 <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(239,68,68,0.1);">

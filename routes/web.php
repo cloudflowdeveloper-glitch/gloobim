@@ -25,6 +25,7 @@ use App\Http\Controllers\CurrencyController;
 
 use App\Http\Controllers\Admin\AdminGiftController;
 use App\Http\Controllers\Admin\AdminSupportController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AdminPaymentController;
 
 Router::get('/', [HomeController::class, 'index']);
@@ -253,6 +254,27 @@ Router::middleware('auth')->group([], function () {
 
     // ===== ADMIN ROUTES =====
     Router::group(['middleware' => ['admin']], function () {
+        // Admin Dashboard
+        Router::get('/admin', [AdminController::class, 'dashboard']);
+        Router::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+
+        // Admin Users
+        Router::get('/admin/users', [AdminController::class, 'users']);
+        Router::post('/admin/users/{id}/ban', [AdminController::class, 'toggleBan']);
+        Router::post('/admin/users/{id}/verify', [AdminController::class, 'toggleVerify']);
+        Router::post('/admin/users/{id}/role', [AdminController::class, 'changeRole']);
+
+        // Admin Content Moderation
+        Router::get('/admin/content', [AdminController::class, 'content']);
+        Router::post('/admin/content/{type}/{id}/delete', [AdminController::class, 'deleteContent']);
+        Router::post('/admin/content/{type}/{id}/restore', [AdminController::class, 'restoreContent']);
+        Router::post('/admin/content/{type}/{id}/feature', [AdminController::class, 'featureContent']);
+
+        // Admin Reports
+        Router::get('/admin/reports', [AdminController::class, 'reports']);
+        Router::post('/admin/reports/{id}', [AdminController::class, 'updateReport']);
+
+        // Admin Gifts
         Router::get('/admin/gifts', [AdminGiftController::class, 'index']);
         Router::get('/admin/gifts/create', [AdminGiftController::class, 'create']);
         Router::post('/admin/gifts', [AdminGiftController::class, 'store']);

@@ -459,13 +459,21 @@ class HomeController extends Controller
                     CASE WHEN ? > 0 AND EXISTS (
                         SELECT 1 FROM followers f2
                         WHERE f2.follower_id = ? AND f2.following_id = p.user_id
-                    ) THEN 1 ELSE 0 END AS is_following
+                    ) THEN 1 ELSE 0 END AS is_following,
+                    CASE WHEN ? > 0 AND EXISTS (
+                        SELECT 1 FROM likes lk
+                        WHERE lk.user_id = ? AND lk.likeable_type = 'post' AND lk.likeable_id = p.id
+                    ) THEN 1 ELSE 0 END AS is_liked,
+                    CASE WHEN ? > 0 AND EXISTS (
+                        SELECT 1 FROM bookmarks bm
+                        WHERE bm.user_id = ? AND bm.bookmarkable_type = 'post' AND bm.bookmarkable_id = p.id
+                    ) THEN 1 ELSE 0 END AS is_bookmarked
                 FROM posts p
                 INNER JOIN users u ON p.user_id = u.id
                 WHERE p.status = 'published'
                 ORDER BY p.created_at DESC
                 LIMIT 10",
-                [$myId, $myId]
+                [$myId, $myId, $myId, $myId, $myId, $myId]
             );
         } catch (\Exception $e) {
             return [];

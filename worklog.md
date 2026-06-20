@@ -204,3 +204,36 @@ Stage Summary:
 - 14 currencies supported: KES, NGN, GHS, ETB, TZS, UGX, RWF, ZAR, USD, EUR, GBP, INR, AUD, CAD
 - Currency preference stored in PHP session, persists across page loads
 - Global JS `GlobiimCurrency.format(usdAmount)` available on every page for frontend price conversion
+
+---
+Task ID: 8
+Agent: main (with 4 parallel subagents)
+Task: Home feed interaction state persistence + full admin panel
+
+Work Log:
+- Enhanced HomeController::getPosts() to include `is_liked` and `is_bookmarked` per-post state via EXISTS subqueries on likes and bookmarks tables
+- Updated home/index.php feed post action buttons to reflect initial like/bookmark state (filled vs outline icons, colored vs default)
+- Created `app/Http/Controllers/Admin/AdminController.php` with 8 methods:
+  - `dashboard()` - Platform overview with 16 stat metrics (users, content, revenue, reports, etc.)
+  - `users()` - Paginated user list with search, role filter, status filter
+  - `toggleBan($id)` - Ban/unban user
+  - `toggleVerify($id)` - Verify/unverify user
+  - `changeRole($id)` - Change user role (user/creator/admin)
+  - `content()` - Paginated content moderation for posts/reels/videos with status filter
+  - `deleteContent($type, $id)` / `restoreContent($type, $id)` / `featureContent($type, $id)`
+  - `reports()` - Paginated reports with status filter
+  - `updateReport($id)` - Update report status (reviewed/resolved/dismissed)
+- Created 4 admin views (dark theme, mobile-first, Material Icons Round):
+  - `resources/views/admin/dashboard.php` - Stats grid, quick actions, recent users/reports/content
+  - `resources/views/admin/users.php` - User cards with search, role/status filters, ban/verify/role-change actions
+  - `resources/views/admin/content.php` - Content cards with type tabs, status filter, delete/restore/feature actions
+  - `resources/views/admin/reports.php` - Report cards with status tabs, review/resolve/dismiss actions
+- Registered 11 new admin routes in routes/web.php (inside admin middleware group)
+- Added "Admin Panel" link in side menu (visible only to admin role users)
+- Fixed reports.php redefining timeAgo() function (conflicts with helpers.php)
+
+Stage Summary:
+- Files created: app/Http/Controllers/Admin/AdminController.php, resources/views/admin/dashboard.php, users.php, content.php, reports.php
+- Files modified: app/Http/Controllers/HomeController.php, resources/views/home/index.php, resources/views/menu/index.php, routes/web.php
+- Home feed now shows correct initial like/bookmark state per user
+- Full admin panel with: Dashboard, User Management, Content Moderation, Reports, Gifts, Payments, Support

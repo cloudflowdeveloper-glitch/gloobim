@@ -515,8 +515,8 @@
                 <?php endif; ?>
                 <!-- Post Actions -->
                 <div class="px-3.5 py-2.5 flex items-center justify-between">
-                    <button onclick="likePost(<?= $post['id'] ?>, this)" class="action-btn flex items-center gap-1 text-zinc-400 hover:text-red-400">
-                        <span class="material-icons-round text-[20px]">favorite_border</span>
+                    <button onclick="likePost(<?= $post['id'] ?>, this)" class="action-btn flex items-center gap-1 <?= !empty($post['is_liked']) ? 'text-red-400' : 'text-zinc-400 hover:text-red-400' ?>">
+                        <span class="material-icons-round text-[20px]"><?= !empty($post['is_liked']) ? 'favorite' : 'favorite_border' ?></span>
                         <span class="text-[11px]"><?= formatCount($post['likes']) ?></span>
                     </button>
                     <button onclick="commentOnPost(<?= $post['id'] ?>)" class="action-btn flex items-center gap-1 text-zinc-400 hover:text-purple-400">
@@ -530,8 +530,8 @@
                     <button onclick="tipPost(<?= $post['id'] ?>)" class="action-btn flex items-center gap-1 text-zinc-400 hover:text-amber-400">
                         <span class="material-icons-round text-[20px]">monetization_on</span>
                     </button>
-                    <button onclick="bookmarkPost(<?= $post['id'] ?>, this)" class="action-btn text-zinc-400 hover:text-purple-400">
-                        <span class="material-icons-round text-[20px]">bookmark_border</span>
+                    <button onclick="bookmarkPost(<?= $post['id'] ?>, this)" class="action-btn <?= !empty($post['is_bookmarked']) ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400' ?>">
+                        <span class="material-icons-round text-[20px]"><?= !empty($post['is_bookmarked']) ? 'bookmark' : 'bookmark_border' ?></span>
                     </button>
                 </div>
             </article>
