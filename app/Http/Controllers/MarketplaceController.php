@@ -89,13 +89,16 @@ class MarketplaceController extends Controller
             $productImages = ['product_iphone.jpg', 'product_headphones.jpg', 'product_laptop.jpg', 'product_watch.jpg', 'product_sneakers.jpg', 'product_camera.jpg', 'product_sunglasses.jpg', 'product_backpack.jpg', 'product_speaker.jpg', 'product_jacket.jpg', 'product_tablet.jpg', 'product_chair.jpg'];
             
             $mapProduct = function ($p, $i) use ($productImages, $baseUrl) {
+                $img = !empty($p['image_url']) && strpos($p['image_url'], 'placehold.co') === false
+                    ? $p['image_url']
+                    : $baseUrl . $productImages[$i % count($productImages)];
                 return [
                     'id' => $p['id'],
                     'title' => $p['title'],
                     'price' => '$' . number_format((float)$p['price'], 0),
                     'old_price' => '$' . number_format((float)$p['price'] * 1.2, 0),
-                    'image' => $p['image_url'] ?? $baseUrl . $productImages[$i % count($productImages)],
-                    'image_url' => $p['image_url'] ?? $baseUrl . $productImages[$i % count($productImages)],
+                    'image' => $img,
+                    'image_url' => $img,
                     'rating' => 4.0 + (rand(0, 9) / 10),
                     'reviews' => (int)($p['views'] ?? rand(100, 5000)),
                     'discount' => '-' . rand(10, 30) . '%',

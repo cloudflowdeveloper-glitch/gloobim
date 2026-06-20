@@ -235,7 +235,7 @@ $user = $data['user'] ?? [];
             <h3><span class="material-icons-round" style="color:var(--purple);">shopping_bag</span> Order Summary</h3>
             <?php foreach ($items as $item): ?>
             <div class="co-summary-item">
-                <img src="<?= $item['image_url'] ?? 'https://placehold.co/88x88/1E293B/94A3B8?text=Item' ?>" alt="" class="co-summary-img">
+                <img src="<?= $item['image_url'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="co-summary-img">
                 <div class="co-summary-info">
                     <div class="co-summary-title"><?= htmlspecialchars($item['title']) ?></div>
                     <div class="co-summary-qty">Qty: <?= $item['quantity'] ?></div>

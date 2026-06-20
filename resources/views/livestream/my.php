@@ -91,7 +91,7 @@ $user = \Core\Auth::user();
             <?php foreach ($endedStreams as $s): ?>
             <a href="/livestream/<?= $s['id'] ?>" class="flex items-center gap-3 p-3 rounded-xl bg-surface-100/40 border border-surface-400/10 hover:border-surface-400/30 transition-all">
                 <div class="w-14 h-14 rounded-xl bg-surface-200 overflow-hidden flex-shrink-0">
-                    <img src="<?= $s['thumbnail'] ?? 'https://placehold.co/56x56/3f3f46/ffffff?text=Ended' ?>" alt="" class="w-full h-full object-cover">
+                    <img src="<?= $s['thumbnail'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover">
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-white text-xs font-semibold truncate"><?= htmlspecialchars($s['title'] ?? '') ?></p>

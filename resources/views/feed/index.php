@@ -58,7 +58,7 @@
             <a href="/posts/<?= $post['id'] ?>" class="block bg-surface-100/30 rounded-2xl overflow-hidden border border-surface-400/10 hover:border-surface-400/30 transition-all">
                 <div class="flex items-center justify-between px-4 pt-4 pb-2">
                     <div class="flex items-center gap-2.5">
-                        <img src="<?= $post['creator_avatar'] ?? 'https://placehold.co/36x36/3f3f46/ffffff?text=U' ?>" alt="" class="w-9 h-9 rounded-full">
+                        <img src="<?= $post['creator_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-9 h-9 rounded-full">
                         <div>
                             <div class="flex items-center gap-1">
                                 <span class="text-white text-xs font-semibold"><?= $post['creator_name'] ?></span>

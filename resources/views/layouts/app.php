@@ -86,7 +86,7 @@
                 </a>
                 <a href="/profile" class="ml-0.5">
                     <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-brand-600/50">
-                        <img src="https://placehold.co/80x80/6d28d9/ffffff?text=U" alt="Profile" class="w-full h-full object-cover">
+                        <img src="/uploads/profiles/admin.jpg" alt="Profile" class="w-full h-full object-cover">
                     </div>
                 </a>
             </div>

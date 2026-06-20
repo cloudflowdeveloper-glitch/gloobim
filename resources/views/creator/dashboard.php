@@ -115,7 +115,7 @@
             <?php foreach ($stats['recent_videos'] as $video): ?>
             <a href="/videos/<?= $video['id'] ?>" class="flex items-center gap-3 p-3 rounded-xl bg-surface-100/40 border border-surface-400/10 hover:border-surface-400/30 transition-all">
                 <div class="relative w-20 flex-shrink-0">
-                    <img src="<?= $video['thumbnail'] ?? 'https://placehold.co/80x45/3f3f46/ffffff?text=Video' ?>" alt="" class="w-full aspect-video rounded-lg object-cover">
+                    <img src="<?= $video['thumbnail'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full aspect-video rounded-lg object-cover">
                     <div class="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/80 text-white text-[8px] font-medium">
                         <?= formatDuration($video['duration'] ?? 0) ?>
                     </div>

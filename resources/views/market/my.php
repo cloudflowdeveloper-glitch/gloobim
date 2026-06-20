@@ -25,7 +25,7 @@
     <div class="space-y-2">
         <?php foreach ($items as $item): ?>
         <a href="/market/<?= $item['id'] ?>" class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-100/30 border border-surface-400/10 hover:border-amber-500/30 hover:-translate-y-0.5 transition-all">
-            <img src="<?= $item['thumbnail'] ?? 'https://placehold.co/56x56/3f3f46/ffffff?text=I' ?>" alt="" class="w-14 h-14 rounded-xl object-cover flex-shrink-0">
+            <img src="<?= $item['thumbnail'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-14 h-14 rounded-xl object-cover flex-shrink-0">
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                     <p class="text-white text-xs font-semibold truncate"><?= htmlspecialchars($item['title'] ?? '') ?></p>

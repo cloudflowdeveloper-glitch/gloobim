@@ -173,7 +173,7 @@
         <a href="/messages/<?= $conv['id'] ?>" class="flex flex-col items-center gap-1.5 flex-shrink-0">
             <div class="relative">
                 <div class="w-14 h-14 rounded-full overflow-hidden" style="box-shadow: 0 0 0 2.5px rgba(34,197,94,0.4);">
-                    <img src="<?= $conv['other_avatar'] ?? 'https://placehold.co/56x56/3f3f46/ffffff?text=U' ?>" alt="<?= htmlspecialchars($conv['other_name'] ?? '') ?>" class="w-full h-full object-cover">
+                    <img src="<?= $conv['other_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="<?= htmlspecialchars($conv['other_name'] ?? '') ?>" class="w-full h-full object-cover">
                 </div>
                 <div class="online-dot <?= $isOnline ? 'online' : 'offline' ?>"></div>
             </div>
@@ -198,7 +198,7 @@
                 <!-- Avatar -->
                 <div class="relative flex-shrink-0">
                     <div class="w-12 h-12 rounded-full overflow-hidden" style="<?= $isUnread ? 'box-shadow: 0 0 0 2.5px rgba(131,74,229,0.5);' : '' ?>">
-                        <img src="<?= $conv['other_avatar'] ?? 'https://placehold.co/48x48/3f3f46/ffffff?text=U' ?>" alt="<?= htmlspecialchars($conv['other_name'] ?? '') ?>" class="w-full h-full object-cover">
+                        <img src="<?= $conv['other_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="<?= htmlspecialchars($conv['other_name'] ?? '') ?>" class="w-full h-full object-cover">
                     </div>
                     <div class="online-dot <?= $isOnline ? 'online' : 'offline' ?>"></div>
                     <?php if (!empty($conv['other_verified'])): ?>
@@ -451,7 +451,7 @@ function renderSearchResults(users) {
 }
 
 function createUserItemHTML(user) {
-    const avatar = user.avatar || 'https://placehold.co/48x48/3f3f46/ffffff?text=' + (user.name || 'U').charAt(0);
+    const avatar = user.avatar || '/uploads/profiles/admin.jpg' + (user.name || 'U').charAt(0);
     const verified = user.is_verified ? '<div class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#834ae5] rounded-full flex items-center justify-center"><svg width="8" height="8" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg></div>' : '';
     const bio = user.bio ? '<p class="text-[11px] text-zinc-500 truncate">' + escHTML(user.bio) + '</p>' : '';
     const followBadge = user.is_following > 0 ? '<span class="text-[10px] font-medium px-2 py-0.5 rounded-full border" style="color: #834ae5; border-color: rgba(131,74,229,0.3);">Following</span>' : '';

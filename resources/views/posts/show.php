@@ -93,7 +93,7 @@
         <?php if (!empty($comments)): ?>
             <?php foreach ($comments as $comment): ?>
             <div class="flex items-start gap-2.5 p-3 rounded-2xl bg-surface-100/40 border border-surface-400/10">
-                <img src="<?= $comment['commenter_avatar'] ?? 'https://placehold.co/32x32/3f3f46/ffffff?text=U' ?>" alt="" class="w-8 h-8 rounded-full flex-shrink-0">
+                <img src="<?= $comment['commenter_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-8 h-8 rounded-full flex-shrink-0">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1.5 mb-0.5">
                         <span class="text-white text-xs font-semibold"><?= $comment['commenter_name'] ?? 'User' ?></span>

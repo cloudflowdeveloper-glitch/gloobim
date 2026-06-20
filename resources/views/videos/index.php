@@ -110,7 +110,7 @@
                         <h3 class="text-white text-base font-bold leading-tight mb-1"><?= htmlspecialchars($fv['title']) ?></h3>
                         <p class="text-zinc-300 text-[11px] leading-snug mb-2"><?= htmlspecialchars($fv['description'] ?? '') ?></p>
                         <div class="flex items-center gap-2">
-                            <img src="<?= $fv['creator_avatar'] ?? 'https://placehold.co/36/36/6d28d9/ffffff?text=C' ?>" alt="" class="w-6 h-6 rounded-full border border-white/30">
+                            <img src="<?= $fv['creator_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-6 h-6 rounded-full border border-white/30">
                             <div class="min-w-0">
                                 <div class="flex items-center gap-1">
                                     <span class="text-white text-[11px] font-semibold truncate"><?= htmlspecialchars($fv['creator_name'] ?? '') ?></span>
@@ -232,7 +232,7 @@
             <?php foreach ($creatorsToWatch as $creator): ?>
             <div class="flex items-center gap-3 p-3 bg-[#14141c] rounded-xl border border-[#1e1e2a]">
                 <div class="relative flex-shrink-0">
-                    <img src="<?= $creator['avatar'] ?? 'https://placehold.co/44/44/6d28d9/ffffff?text=C' ?>" alt="<?= htmlspecialchars($creator['name'] ?? '') ?>" class="w-11 h-11 rounded-full object-cover border-2 border-brand-600/30">
+                    <img src="<?= $creator['avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="<?= htmlspecialchars($creator['name'] ?? '') ?>" class="w-11 h-11 rounded-full object-cover border-2 border-brand-600/30">
                     <?php if (!empty($creator['is_verified'])): ?>
                     <span class="absolute -bottom-0.5 -right-0.5 material-icons-round text-brand-400 text-sm bg-[#14141c] rounded-full">verified</span>
                     <?php endif; ?>

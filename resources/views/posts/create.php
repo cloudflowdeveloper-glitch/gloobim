@@ -27,7 +27,7 @@
             </a>
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-brand-500/60">
-                    <img src="https://placehold.co/80x80/6d28d9/ffffff?text=U" alt="Profile" class="w-full h-full object-cover">
+                    <img src="/uploads/profiles/admin.jpg" alt="Profile" class="w-full h-full object-cover">
                 </div>
                 <div class="relative">
                     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-pink-500 flex items-center justify-center glow-pulse">
@@ -186,9 +186,9 @@
             </div>
             <?php
             $drafts = [
-                ['thumb' => 'https://placehold.co/200x300/7c3aed/ffffff?text=Draft+1', 'title' => 'Weekly Vlog', 'duration' => '12:34', 'time' => '2h ago'],
-                ['thumb' => 'https://placehold.co/200x300/d97706/ffffff?text=Draft+2', 'title' => 'Tutorial', 'duration' => '28:15', 'time' => '5h ago'],
-                ['thumb' => 'https://placehold.co/200x300/06b6d4/ffffff?text=Draft+3', 'title' => 'Music Video', 'duration' => '4:20', 'time' => '1d ago'],
+                ['thumb' => '/uploads/profiles/admin.jpg', 'title' => 'Weekly Vlog', 'duration' => '12:34', 'time' => '2h ago'],
+                ['thumb' => '/uploads/profiles/admin.jpg', 'title' => 'Tutorial', 'duration' => '28:15', 'time' => '5h ago'],
+                ['thumb' => '/uploads/profiles/admin.jpg', 'title' => 'Music Video', 'duration' => '4:20', 'time' => '1d ago'],
             ];
             foreach ($drafts as $draft):
             ?>

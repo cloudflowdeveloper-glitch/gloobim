@@ -10,7 +10,7 @@ if ($currentUser) {
 }
 $name = $currentUser['name'] ?? 'Guest';
 $username = $currentUser['username'] ?? 'guest';
-$avatar = $currentUser['avatar'] ?? 'https://placehold.co/56x56/6d28d9/ffffff?text=U';
+$avatar = $currentUser['avatar'] ?? '/uploads/profiles/admin.jpg';
 $isVerified = !empty($currentUser['is_verified']);
 $balance = $wallet ? number_format((float)$wallet['balance'], 0) : '0';
 $currency = $wallet['currency'] ?? 'KES';

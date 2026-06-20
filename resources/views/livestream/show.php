@@ -210,7 +210,7 @@
         <div class="absolute bottom-20 left-3 z-20 pointer-events-none">
             <div class="flex items-center gap-2 mb-1.5">
                 <div class="flex-shrink-0 relative">
-                    <img src="<?= $stream['creator_avatar'] ?? 'https://placehold.co/80x80/6d28d9/ffffff?text=U' ?>" alt="" class="w-10 h-10 rounded-full border-2 border-white/50">
+                    <img src="<?= $stream['creator_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-10 h-10 rounded-full border-2 border-white/50">
                     <?php if (!empty($stream['is_verified'])): ?>
                     <span class="absolute -bottom-0.5 -right-0.5 material-icons-round text-brand-400 text-sm bg-black rounded-full text-[14px]">verified</span>
                     <?php endif; ?>
@@ -307,7 +307,7 @@
         <div class="absolute bottom-20 left-3 z-20 pointer-events-none">
             <div class="flex items-center gap-2">
                 <div class="flex-shrink-0 relative">
-                    <img src="<?= $stream['creator_avatar'] ?? 'https://placehold.co/80x80/6d28d9/ffffff?text=U' ?>" alt="" class="w-10 h-10 rounded-full border-2 border-white/50">
+                    <img src="<?= $stream['creator_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-10 h-10 rounded-full border-2 border-white/50">
                     <?php if (!empty($stream['is_verified'])): ?>
                     <span class="absolute -bottom-0.5 -right-0.5 material-icons-round text-brand-400 text-sm bg-black rounded-full text-[14px]">verified</span>
                     <?php endif; ?>
@@ -1360,7 +1360,7 @@ function updateViewerBubbles(viewers) {
             const id = v.id || v.viewer_sid;
             if (existingIds.indexOf(id) === -1) {
                 const name = v.username || v.viewer_sid || 'Guest';
-                const avatar = v.avatar || 'https://placehold.co/28x28/3f3f46/ffffff?text=' + name.charAt(0).toUpperCase();
+                const avatar = v.avatar || '/uploads/profiles/admin.jpg' + name.charAt(0).toUpperCase();
                 const bubble = document.createElement('div');
                 bubble.className = 'viewer-bubble';
                 bubble.setAttribute('data-viewer-id', id);

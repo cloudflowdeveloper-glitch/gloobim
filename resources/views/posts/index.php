@@ -101,7 +101,7 @@
     <div class="px-4 py-3">
         <div class="flex items-center gap-3 p-3 rounded-2xl border border-[#1e1e2a]" style="background: rgba(20,20,28,0.6);">
             <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style="box-shadow: 0 0 0 2px rgba(131,74,229,0.5);">
-                <img src="https://placehold.co/80x80/6d28d9/ffffff?text=U" alt="You" class="w-full h-full object-cover">
+                <img src="/uploads/profiles/admin.jpg" alt="You" class="w-full h-full object-cover">
             </div>
             <div class="flex-1 min-w-0">
                 <input type="text" placeholder="What's on your mind?" class="w-full bg-transparent text-white text-sm placeholder:text-zinc-600 focus:outline-none" onclick="window.location.href='/posts/create'">

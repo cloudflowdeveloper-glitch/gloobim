@@ -45,7 +45,7 @@ $count = count($items);
     <?php else: ?>
     <?php foreach ($items as $item): ?>
     <div class="wl-item" id="wl-row-<?= $item['id'] ?>">
-        <a href="/marketplace/<?= $item['id'] ?>"><img src="<?= $item['image_url'] ?? 'https://placehold.co/180x180/1E293B/94A3B8?text=No+Image' ?>" alt="<?= htmlspecialchars($item['title']) ?>" class="wl-item-img"></a>
+        <a href="/marketplace/<?= $item['id'] ?>"><img src="<?= $item['image_url'] ?? '/uploads/profiles/admin.jpg' ?>" alt="<?= htmlspecialchars($item['title']) ?>" class="wl-item-img"></a>
         <div class="wl-item-info">
             <a href="/marketplace/<?= $item['id'] ?>" style="text-decoration:none;color:inherit;"><div class="wl-item-title"><?= htmlspecialchars($item['title']) ?></div></a>
             <div class="wl-item-price">$<?= number_format((float)$item['price']) ?></div>

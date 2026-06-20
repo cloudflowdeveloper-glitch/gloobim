@@ -47,7 +47,7 @@
     <?php if (!empty($listings)): ?>
         <?php foreach ($listings as $listing): ?>
         <a href="/marketplace/<?= $listing['id'] ?>" class="ml-card">
-            <img src="<?= $listing['image_url'] ?? 'https://placehold.co/128x128/1E293B/94A3B8?text=Item' ?>" alt="" class="ml-card-img">
+            <img src="<?= $listing['image_url'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="ml-card-img">
             <div class="ml-card-info">
                 <div class="ml-card-title">
                     <?= htmlspecialchars($listing['title'] ?? 'Untitled') ?>

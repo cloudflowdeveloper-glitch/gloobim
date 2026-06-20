@@ -4,7 +4,7 @@ $messages = $data['messages'] ?? [];
 $conversation = $data['conversation'] ?? null;
 $userId = (int)($data['userId'] ?? 0);
 $otherName = $conversation['other_name'] ?? 'Chat';
-$otherAvatar = $conversation['other_avatar'] ?? 'https://placehold.co/48x48/3f3f46/ffffff?text=U';
+$otherAvatar = $conversation['other_avatar'] ?? '/uploads/profiles/admin.jpg';
 $otherVerified = !empty($conversation['other_verified']);
 $otherOnline = !empty($conversation['other_online']);
 ?>

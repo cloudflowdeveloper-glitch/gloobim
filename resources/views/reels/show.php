@@ -151,7 +151,7 @@ $thumbnail = $reel['thumbnail'] ?? '';
 
         <!-- Spinning Music Disc -->
         <div class="w-10 h-10 rounded-full border-2 border-white/30 overflow-hidden spin-disc mt-1">
-            <img src="<?= $reel['creator_avatar'] ?? 'https://placehold.co/40/40/3f3f46/ffffff?text=♪' ?>" alt="Music" class="w-full h-full object-cover">
+            <img src="<?= $reel['creator_avatar'] ?? '/uploads/music/artists/avatar_1.jpg' ?>" alt="Music" class="w-full h-full object-cover">
         </div>
     </div>
 
@@ -160,7 +160,7 @@ $thumbnail = $reel['thumbnail'] ?? '';
         <!-- Creator Info -->
         <div class="flex items-center gap-2.5 mb-2 pointer-events-auto">
             <div class="creator-ring flex-shrink-0">
-                <img src="<?= $reel['creator_avatar'] ?? 'https://placehold.co/44/44/3f3f46/ffffff?text=U' ?>" alt="<?= $reel['creator_name'] ?>" class="w-9 h-9 rounded-full border-2 border-black object-cover">
+                <img src="<?= $reel['creator_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="<?= $reel['creator_name'] ?>" class="w-9 h-9 rounded-full border-2 border-black object-cover">
             </div>
             <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
@@ -260,7 +260,7 @@ $thumbnail = $reel['thumbnail'] ?? '';
         <?php if (!empty($comments)): ?>
             <?php foreach ($comments as $comment): ?>
             <div class="flex gap-2.5">
-                <img src="<?= $comment['commenter_avatar'] ?? 'https://placehold.co/32/32/3f3f46/ffffff?text=U' ?>" class="w-8 h-8 rounded-full flex-shrink-0">
+                <img src="<?= $comment['commenter_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" class="w-8 h-8 rounded-full flex-shrink-0">
                 <div>
                     <div class="flex items-center gap-1.5">
                         <span class="text-white text-xs font-semibold"><?= htmlspecialchars($comment['commenter_name'] ?? $comment['username'] ?? '') ?></span>
@@ -282,7 +282,7 @@ $thumbnail = $reel['thumbnail'] ?? '';
         <?php endif; ?>
     </div>
     <div class="px-4 py-2.5 border-t border-white/10 flex items-center gap-2">
-        <img src="https://placehold.co/32x32/6d28d9/ffffff?text=U" class="w-7 h-7 rounded-full flex-shrink-0">
+        <img src="/uploads/profiles/admin.jpg" class="w-7 h-7 rounded-full flex-shrink-0">
         <input type="text" id="commentInput" placeholder="Add a comment..." class="chat-input flex-1 bg-white/10 text-white px-3 py-2 rounded-full text-[12px] placeholder:text-zinc-500 border border-white/10" onkeydown="if(event.key==='Enter')sendComment()">
         <button onclick="sendComment()" class="text-[12px] font-bold text-blue-400 flex-shrink-0">Post</button>
     </div>
@@ -450,7 +450,7 @@ function sendComment() {
     const scroll = document.getElementById('commentsScroll');
     const row = document.createElement('div');
     row.className = 'flex gap-2.5 fade-in';
-    row.innerHTML = '<img src="https://placehold.co/32x32/6d28d9/ffffff?text=U" class="w-8 h-8 rounded-full flex-shrink-0"><div><span class="text-white text-xs font-semibold">You</span><p class="text-zinc-200 text-[13px]">' + escapeHtml(msg) + '</p><div class="flex items-center gap-3 mt-0.5"><span class="text-zinc-600 text-[10px]">Just now</span></div></div>';
+    row.innerHTML = '<img src="/uploads/profiles/admin.jpg" class="w-8 h-8 rounded-full flex-shrink-0"><div><span class="text-white text-xs font-semibold">You</span><p class="text-zinc-200 text-[13px]">' + escapeHtml(msg) + '</p><div class="flex items-center gap-3 mt-0.5"><span class="text-zinc-600 text-[10px]">Just now</span></div></div>';
     scroll.appendChild(row); scroll.scrollTop = scroll.scrollHeight;
     input.value = '';
     fetch('/reels/' + reelId + '/comment', {

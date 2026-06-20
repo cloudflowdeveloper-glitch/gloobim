@@ -23,7 +23,7 @@ $search = $data['search'] ?? '';
         <?php foreach ($streams as $s): ?>
         <a href="/livestream/<?= $s['id'] ?>" class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-100/40 border border-surface-400/10 hover:border-surface-400/30 hover:-translate-y-0.5 transition-all">
             <div class="w-16 h-16 rounded-xl bg-surface-200 overflow-hidden flex-shrink-0 relative">
-                <img src="<?= $s['thumbnail'] ?? 'https://placehold.co/64x64/3f3f46/ffffff?text=Ended' ?>" alt="" class="w-full h-full object-cover">
+                <img src="<?= $s['thumbnail'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover">
                 <span class="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/70 text-white text-[7px] font-medium"><?= isset($s['duration_seconds']) && $s['duration_seconds'] ? gmdate('H:i:s', (int)$s['duration_seconds']) : '' ?></span>
             </div>
             <div class="flex-1 min-w-0">
@@ -31,7 +31,7 @@ $search = $data['search'] ?? '';
                     <p class="text-white text-xs font-semibold truncate"><?= htmlspecialchars($s['title'] ?? '') ?></p>
                 </div>
                 <div class="flex items-center gap-1">
-                    <img src="<?= $s['creator_avatar'] ?? 'https://placehold.co/16x16/6d28d9/ffffff?text=U' ?>" alt="" class="w-4 h-4 rounded-full">
+                    <img src="<?= $s['creator_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-4 h-4 rounded-full">
                     <span class="text-zinc-500 text-[9px]">@<?= htmlspecialchars($s['username'] ?? '') ?></span>
                     <?php if (!empty($s['is_verified'])): ?><span class="material-icons-round text-brand-400 text-[10px]">verified</span><?php endif; ?>
                 </div>

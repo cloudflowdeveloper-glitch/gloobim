@@ -398,7 +398,7 @@ $listings = $data['listings'] ?? [];
             <span class="material-icons-round nav-icon">home</span>
             <span class="nav-label">Home</span>
         </a>
-        <a href="/marketplace" class="mk-nav-item">
+        <a href="/marketplace/categories" class="mk-nav-item">
             <span class="material-icons-round nav-icon">category</span>
             <span class="nav-label">Categories</span>
         </a>

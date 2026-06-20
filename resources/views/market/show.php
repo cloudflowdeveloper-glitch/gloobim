@@ -22,7 +22,7 @@ $ratingHalf = ($rating - $ratingFull) >= 0.5;
     <?php if ($item): ?>
     <div class="rounded-2xl overflow-hidden mb-4 bg-surface-200">
         <div class="aspect-[16/9] relative">
-            <img src="<?= $item['thumbnail'] ?? 'https://placehold.co/600x338/3f3f46/ffffff?text=No+Image' ?>" alt="" class="w-full h-full object-cover">
+            <img src="<?= $item['thumbnail'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover">
             <div class="absolute top-3 left-3 flex gap-1.5">
                 <?php if ($item['type'] === 'digital'): ?>
                 <span class="px-2.5 py-1 rounded-full bg-purple-500/80 text-white text-[10px] font-medium">Digital Product</span>
@@ -69,7 +69,7 @@ $ratingHalf = ($rating - $ratingFull) >= 0.5;
     </div>
 
     <div class="flex items-center gap-3 mb-4 p-3 rounded-xl bg-surface-100/40 border border-surface-400/10">
-        <img src="<?= $item['seller_avatar'] ?? 'https://placehold.co/40x40/6d28d9/ffffff?text=S' ?>" alt="" class="w-10 h-10 rounded-full">
+        <img src="<?= $item['seller_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-10 h-10 rounded-full">
         <div class="flex-1">
             <div class="flex items-center gap-1">
                 <span class="text-white text-sm font-semibold"><?= htmlspecialchars($item['seller_name'] ?? $item['username'] ?? '') ?></span>
@@ -161,7 +161,7 @@ $ratingHalf = ($rating - $ratingFull) >= 0.5;
             <?php foreach ($moreItems as $mi): ?>
             <a href="/market/<?= $mi['id'] ?>" class="block bg-surface-100/40 rounded-2xl border border-surface-400/10 hover:border-amber-500/30 hover:-translate-y-0.5 transition-all group overflow-hidden">
                 <div class="relative aspect-[4/3] bg-surface-200 overflow-hidden">
-                    <img src="<?= $mi['thumbnail'] ?? 'https://placehold.co/400x300/3f3f46/ffffff?text=Item' ?>" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    <img src="<?= $mi['thumbnail'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                     <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-[8px] font-medium">
                         <?= htmlspecialchars($mi['category'] ?? '') ?>
                     </span>

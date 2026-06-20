@@ -234,7 +234,7 @@
         <!-- Preview card -->
         <div class="bg-[#14141c] rounded-2xl border border-[#1e1e2a] overflow-hidden mb-4">
             <div class="relative aspect-video bg-zinc-800">
-                <img id="previewThumb" src="https://placehold.co/640x360/1e1e2a/ffffff?text=Video" class="w-full h-full object-cover">
+                <img id="previewThumb" src="/uploads/profiles/admin.jpg" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                 <div class="absolute bottom-3 left-3 right-3">
                     <h3 class="text-white text-sm font-bold" id="previewTitle">Your Video Title</h3>
@@ -243,7 +243,7 @@
                 <div class="absolute top-3 right-3 px-2 py-0.5 rounded bg-brand-600 text-white text-[9px] font-bold">NEW</div>
             </div>
             <div class="p-3 flex items-center gap-3">
-                <img src="https://placehold.co/36/36/6d28d9/ffffff?text=U" class="w-9 h-9 rounded-full border border-brand-600/30">
+                <img src="/uploads/profiles/admin.jpg" class="w-9 h-9 rounded-full border border-brand-600/30">
                 <div>
                     <span class="text-white text-xs font-semibold">You</span>
                     <p class="text-zinc-500 text-[10px]" id="previewCategory">No category selected</p>

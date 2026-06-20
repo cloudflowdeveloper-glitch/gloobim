@@ -86,7 +86,7 @@ foreach ($notifications as $n) {
             <!-- Avatar with type badge -->
             <div class="relative flex-shrink-0">
                 <div class="w-11 h-11 rounded-full overflow-hidden <?= $avatarRing ?>">
-                    <img src="<?= $n['actor_avatar'] ?? 'https://placehold.co/44x44/3f3f46/ffffff?text=?' ?>" alt="" class="w-full h-full object-cover">
+                    <img src="<?= $n['actor_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover">
                 </div>
                 <div class="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-white type-badge-<?= $typeClass ?>" style="box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
                     <span class="material-icons-round" style="font-size: 10px;"><?= $typeIcon ?></span>
@@ -143,7 +143,7 @@ foreach ($notifications as $n) {
         <div class="notif-card <?= $n['is_read'] ? 'read' : 'unread' ?> flex items-start gap-3 p-3 rounded-2xl cursor-pointer" onclick="openNotification(<?= $n['id'] ?>)">
             <div class="relative flex-shrink-0">
                 <div class="w-11 h-11 rounded-full overflow-hidden <?= $avatarRing ?>">
-                    <img src="<?= $n['actor_avatar'] ?? 'https://placehold.co/44x44/3f3f46/ffffff?text=?' ?>" alt="" class="w-full h-full object-cover">
+                    <img src="<?= $n['actor_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover">
                 </div>
                 <div class="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-white type-badge-<?= $typeClass ?>" style="box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
                     <span class="material-icons-round" style="font-size: 10px;"><?= $typeIcon ?></span>
@@ -176,7 +176,7 @@ foreach ($notifications as $n) {
         <div class="notif-card read flex items-start gap-3 p-3 rounded-2xl cursor-pointer opacity-60 hover:opacity-90 transition-opacity" onclick="openNotification(<?= $n['id'] ?>)">
             <div class="relative flex-shrink-0">
                 <div class="w-11 h-11 rounded-full overflow-hidden">
-                    <img src="<?= $n['actor_avatar'] ?? 'https://placehold.co/44x44/3f3f46/ffffff?text=?' ?>" alt="" class="w-full h-full object-cover opacity-70">
+                    <img src="<?= $n['actor_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover opacity-70">
                 </div>
                 <div class="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-white type-badge-default" style="box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
                     <span class="material-icons-round" style="font-size: 10px;">notifications</span>

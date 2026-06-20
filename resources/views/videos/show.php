@@ -3,10 +3,10 @@
 $video = $data['video'] ?? [];
 $comments = $data['comments'] ?? [];
 $creatorName = $video['creator_name'] ?? $video['username'] ?? 'Creator';
-$creatorAvatar = $video['creator_avatar'] ?? 'https://placehold.co/48x48/3f3f46/ffffff?text=U';
+$creatorAvatar = $video['creator_avatar'] ?? '/uploads/profiles/admin.jpg';
 $isVerified = !empty($video['is_verified']);
 $videoUrl = $video['video_url'] ?? '';
-$thumbnail = $video['thumbnail'] ?? 'https://placehold.co/800x450/3f3f46/ffffff?text=Video';
+$thumbnail = $video['thumbnail'] ?? '/uploads/profiles/admin.jpg';
 $desc = $video['description'] ?? '';
 $tags = $video['tags'] ?? [];
 if (is_string($tags)) $tags = json_decode($tags, true) ?: [];
@@ -265,7 +265,7 @@ if (is_string($tags)) $tags = json_decode($tags, true) ?: [];
             <!-- Comment Input -->
             <div class="flex items-center gap-2.5 mb-4">
                 <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0" style="box-shadow: 0 0 0 2px rgba(131,74,229,0.3);">
-                    <img src="https://placehold.co/32x32/6d28d9/ffffff?text=U" alt="You" class="w-full h-full object-cover">
+                    <img src="/uploads/profiles/admin.jpg" alt="You" class="w-full h-full object-cover">
                 </div>
                 <div class="flex-1 relative">
                     <input type="text" id="videoCommentInput" placeholder="Add a comment..." class="w-full bg-[#14141c] text-white px-4 py-2.5 rounded-full border border-[#1e1e2a] focus:border-[#834ae5] focus:outline-none text-[13px] placeholder:text-zinc-600 transition-all" onkeydown="if(event.key==='Enter')addVideoComment(<?= $video['id'] ?? 0 ?>)">
@@ -280,7 +280,7 @@ if (is_string($tags)) $tags = json_decode($tags, true) ?: [];
             <div class="space-y-3 max-h-[400px] overflow-y-auto scrollbar-hide" id="commentsList">
                 <?php foreach ($comments as $idx => $comment): ?>
                 <div class="comment-item flex gap-2.5 rounded-xl p-2 -mx-2">
-                    <img src="<?= $comment['commenter_avatar'] ?? 'https://placehold.co/32x32/3f3f46/ffffff?text=U' ?>" alt="" class="w-8 h-8 rounded-full flex-shrink-0 mt-0.5">
+                    <img src="<?= $comment['commenter_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-8 h-8 rounded-full flex-shrink-0 mt-0.5">
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-1.5">
                             <span class="text-white text-[12px] font-semibold"><?= htmlspecialchars($comment['commenter_name'] ?? $comment['username'] ?? 'User') ?></span>
@@ -705,7 +705,7 @@ function addVideoComment(id) {
         const div = document.createElement('div');
         div.className = 'comment-item flex gap-2.5 rounded-xl p-2 -mx-2 slide-up';
         div.innerHTML = `
-            <img src="https://placehold.co/32x32/6d28d9/ffffff?text=U" class="w-8 h-8 rounded-full flex-shrink-0 mt-0.5">
+            <img src="/uploads/profiles/admin.jpg" class="w-8 h-8 rounded-full flex-shrink-0 mt-0.5">
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5">
                     <span class="text-white text-[12px] font-semibold">You</span>

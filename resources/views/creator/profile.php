@@ -10,7 +10,7 @@ $isOwnProfile = $data['isOwnProfile'] ?? false;
 
 $name = $profileUser['name'] ?? 'User';
 $username = $profileUser['username'] ?? 'user';
-$avatar = $profileUser['avatar'] ?? 'https://placehold.co/160x160/6d28d9/ffffff?text=' . urlencode(substr($name, 0, 2));
+$avatar = $profileUser['avatar'] ?? '/uploads/profiles/admin.jpg' . urlencode(substr($name, 0, 2));
 $bio = $profileUser['bio'] ?? '';
 $isVerified = !empty($profileUser['is_verified']);
 $profileType = $profileUser['profile_type'] ?? 'personal';

@@ -60,7 +60,7 @@ $total = $data['total'] ?? 0;
     <?php else: ?>
     <?php foreach ($items as $item): ?>
     <div class="cart-item" id="cart-row-<?= $item['cart_id'] ?>">
-        <img src="<?= $item['image_url'] ?? 'https://placehold.co/160x160/1E293B/94A3B8?text=No+Image' ?>" alt="<?= htmlspecialchars($item['title']) ?>" class="cart-item-img">
+        <img src="<?= $item['image_url'] ?? '/uploads/profiles/admin.jpg' ?>" alt="<?= htmlspecialchars($item['title']) ?>" class="cart-item-img">
         <div class="cart-item-info">
             <div class="cart-item-title"><?= htmlspecialchars($item['title']) ?></div>
             <div class="cart-item-seller">by @<?= htmlspecialchars($item['username']) ?></div>

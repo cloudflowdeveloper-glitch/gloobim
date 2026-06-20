@@ -46,7 +46,7 @@ $conditionLabels = ['new' => 'Brand New', 'like_new' => 'Like New', 'good' => 'G
     <?php if ($listing): ?>
     <!-- Product Image -->
     <div style="position: relative;">
-        <img src="<?= $listing['image_url'] ?? 'https://placehold.co/600x600/0B0221/ffffff?text=No+Image' ?>" alt="<?= htmlspecialchars($listing['title'] ?? '') ?>" class="mk-detail-img">
+        <img src="<?= $listing['image_url'] ?? '/uploads/profiles/admin.jpg' ?>" alt="<?= htmlspecialchars($listing['title'] ?? '') ?>" class="mk-detail-img">
         <?php if (!empty($listing['sold'])): ?>
         <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center;">
             <span style="background: rgba(204,24,33,0.85); color: white; font-size: 16px; font-weight: 800; padding: 8px 28px; border-radius: 30px; text-transform: uppercase; letter-spacing: 2px;">Sold</span>
@@ -95,7 +95,7 @@ $conditionLabels = ['new' => 'Brand New', 'like_new' => 'Like New', 'good' => 'G
 
         <!-- Seller Card -->
         <div class="mk-seller-card">
-            <img src="<?= $listing['seller_avatar'] ?? 'https://placehold.co/48x48/6525F8/ffffff?text=S' ?>" alt="" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(101,37,248,0.3);">
+            <img src="<?= $listing['seller_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(101,37,248,0.3);">
             <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <span style="color: #F5F5F7; font-size: 14px; font-weight: 600;"><?= htmlspecialchars($listing['seller_name'] ?? $listing['username'] ?? '') ?></span>

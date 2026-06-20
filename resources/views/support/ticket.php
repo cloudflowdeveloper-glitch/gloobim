@@ -63,7 +63,7 @@ if (!$ticket) { header('Location: /support'); exit; }
     <?php foreach ($messages as $msg): ?>
     <div class="st-msg">
         <div class="st-msg-header">
-            <img src="<?= $msg['avatar'] ?? 'https://placehold.co/56/8B5CF6/white?text=U' ?>" class="st-msg-avatar" alt="">
+            <img src="<?= $msg['avatar'] ?? '/uploads/profiles/admin.jpg' ?>" class="st-msg-avatar" alt="">
             <span class="st-msg-name"><?= htmlspecialchars($msg['name'] ?? $msg['username'] ?? 'User') ?></span>
             <span class="st-msg-role <?= $msg['is_admin'] ? 'admin' : 'user' ?>"><?= $msg['is_admin'] ? 'Support' : 'You' ?></span>
             <span class="st-msg-time"><?= date('M d g:i A', strtotime($msg['created_at'])) ?></span>

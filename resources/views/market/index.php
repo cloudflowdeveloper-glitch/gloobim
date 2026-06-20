@@ -63,7 +63,7 @@ $user = \Core\Auth::user();
         <?php foreach ($items as $item): ?>
         <a href="/market/<?= $item['id'] ?>" class="flex gap-3 p-3 rounded-2xl bg-surface-100/40 border border-surface-400/10 hover:border-amber-500/30 hover:-translate-y-0.5 transition-all group">
             <div class="w-20 h-20 rounded-xl overflow-hidden bg-surface-200 flex-shrink-0">
-                <img src="<?= $item['thumbnail'] ?? ($item['type'] === 'digital' ? 'https://placehold.co/80x80/7c3aed/ffffff?text=Digital' : 'https://placehold.co/80x80/dc2626/ffffff?text=Service') ?>" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                <img src="<?= $item['thumbnail'] ?? ($item['type'] === 'digital' ? '/uploads/profiles/admin.jpg' : '/uploads/profiles/admin.jpg') ?>" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-start justify-between gap-2">
@@ -131,7 +131,7 @@ $user = \Core\Auth::user();
         <div class="space-y-2">
             <?php foreach ($userItems as $item): ?>
             <a href="/market/<?= $item['id'] ?>" class="flex items-center gap-3 p-3 rounded-xl bg-surface-100/30 border border-surface-400/10 hover:border-surface-400/30 transition-all">
-                <img src="<?= $item['thumbnail'] ?? 'https://placehold.co/48x48/3f3f46/ffffff?text=I' ?>" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0">
+                <img src="<?= $item['thumbnail'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1.5">
                         <p class="text-white text-xs font-semibold truncate"><?= htmlspecialchars($item['title'] ?? '') ?></p>

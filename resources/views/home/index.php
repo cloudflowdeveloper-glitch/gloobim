@@ -173,7 +173,7 @@
                     <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
                 <div class="w-9 h-9 rounded-full overflow-hidden" style="box-shadow: 0 0 0 2px rgba(131,74,229,0.5);">
-                    <img src="https://placehold.co/80x80/6d28d9/ffffff?text=U" alt="Profile" class="w-full h-full object-cover">
+                    <img src="/uploads/profiles/admin.jpg" alt="Profile" class="w-full h-full object-cover">
                 </div>
             </div>
         </div>
