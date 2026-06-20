@@ -145,8 +145,8 @@ CREATE TABLE `livestreams` (
 --
 
 INSERT INTO `livestreams` (`id`, `user_id`, `title`, `description`, `thumbnail`, `stream_key`, `stream_url`, `viewers`, `peak_viewers`, `total_likes`, `total_gifts`, `gift_earnings`, `status`, `started_at`, `ended_at`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Late Night Music Session', 'Live music and chat 🎵', 'https://placehold.co/400x225/d97706/ffffff?text=LIVE+1', NULL, NULL, 4200, 8500, 0, 0, 0.00, 'live', '2026-05-21 14:52:18', NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(2, 2, 'Q&A: Starting Your Creator Journey', 'Ask me anything about content creation', 'https://placehold.co/400x225/6d28d9/ffffff?text=LIVE+2', NULL, NULL, 2800, 5100, 0, 0, 0.00, 'live', '2026-05-21 14:52:18', NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18');
+(1, 2, 'Late Night Music Session', 'Live music and chat 🎵', '/uploads/livestreams/live_1.jpg', NULL, NULL, 4200, 8500, 0, 0, 0.00, 'live', '2026-05-21 14:52:18', NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(2, 2, 'Q&A: Starting Your Creator Journey', 'Ask me anything about content creation', '/uploads/livestreams/live_2.jpg', NULL, NULL, 2800, 5100, 0, 0, 0.00, 'live', '2026-05-21 14:52:18', NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18');
 
 -- --------------------------------------------------------
 
@@ -226,8 +226,8 @@ CREATE TABLE `posts` (
 --
 
 INSERT INTO `posts` (`id`, `user_id`, `content`, `image_url`, `likes`, `comments_count`, `shares`, `status`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Just dropped a new dance challenge! Who can keep up? 🔥💃 #KukuaChallenge #DTTube', 'https://placehold.co/600x400/6d28d9/ffffff?text=Post+1', 12400, 843, 2100, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(2, 2, 'New afrobeats pack dropping this Friday on my creator store! 🎧🔥 Pre-order now', 'https://placehold.co/600x300/d97706/ffffff?text=Post+2', 3200, 198, 567, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(1, 2, 'Just dropped a new dance challenge! Who can keep up? 🔥💃 #KukuaChallenge #DTTube', '/uploads/posts/post_1.jpg', 12400, 843, 2100, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(2, 2, 'New afrobeats pack dropping this Friday on my creator store! 🎧🔥 Pre-order now', '/uploads/posts/post_2.jpg', 3200, 198, 567, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
 (3, 2, 'When your African mom discovers you have a wallet balance 😂💰 #Comedy #Relatable', NULL, 24300, 3800, 8900, 'published', '2026-05-21 14:52:18', '2026-05-21 14:52:18');
 
 -- --------------------------------------------------------
@@ -266,14 +266,14 @@ CREATE TABLE `reels` (
 --
 
 INSERT INTO `reels` (`id`, `user_id`, `title`, `description`, `thumbnail`, `video_url`, `duration`, `views`, `likes`, `comments_count`, `shares`, `song_name`, `song_url`, `category`, `tags`, `status`, `is_featured`, `ai_captions`, `viral_score`, `published_at`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Dance Challenge #Kukua', 'Can you keep up with the Kukua challenge? 🔥💃', 'https://placehold.co/300x500/6d28d9/ffffff?text=Reel+1', '/uploads/reels/reel1.mp4', 30, 2450000, 24500, 1800, 5200, 'Kukua Beat - DJ MixMaster', NULL, 'Dance', NULL, 'published', 1, NULL, 87.5, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(2, 2, 'Cooking Jollof Rice', 'My secret recipe revealed! 🍚', 'https://placehold.co/300x500/dc2626/ffffff?text=Reel+2', '/uploads/reels/reel2.mp4', 45, 1800000, 18900, 3200, 8100, 'Afro Kitchen Vibes - BeatMaker', NULL, 'Food', NULL, 'published', 0, NULL, 72.3, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(3, 2, 'Nairobi Night Vibes', 'Night out in the city 🌃', 'https://placehold.co/300x500/059669/ffffff?text=Reel+3', '/uploads/reels/reel3.mp4', 22, 980000, 9800, 560, 1900, 'Original Sound - ZaraKe', NULL, 'Lifestyle', NULL, 'published', 0, NULL, 65.1, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(4, 2, 'AI Art is Crazy', 'Watch what AI created in 30 seconds 🤖', 'https://placehold.co/300x500/2563eb/ffffff?text=Reel+4', '/uploads/reels/reel4.mp4', 58, 3100000, 31200, 5600, 12400, 'Digital Dreams - SynthWave', NULL, 'Tech', NULL, 'published', 1, NULL, 91.2, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(5, 2, 'Afrobeats Studio Session', 'New track dropping this Friday 🎧🔥', 'https://placehold.co/300x500/d97706/ffffff?text=Reel+5', '/uploads/reels/reel5.mp4', 35, 1200000, 12100, 890, 3400, 'Afro Drop (Preview) - BeatMaker', NULL, 'Music', NULL, 'published', 0, NULL, 68.7, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(6, 2, 'Comedy: African Mom', 'When your African mom finds your wallet balance 😂💰', 'https://placehold.co/300x500/e11d48/ffffff?text=Reel+6', '/uploads/reels/reel6.mp4', 40, 5600000, 56300, 8900, 24100, 'Original Sound - ZaraKe', NULL, 'Comedy', NULL, 'published', 1, NULL, 95.8, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(7, 2, 'Skincare Routine', 'The routine that ACTUALLY works ✨', 'https://placehold.co/300x500/7c3aed/ffffff?text=Reel+7', '/uploads/reels/reel7.mp4', 55, 870000, 8700, 421, 1900, 'Soft Vibes - ChillBeats', NULL, 'Beauty', NULL, 'published', 0, NULL, 54.2, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(8, 2, 'Football Skills', 'Check these moves ⚽', 'https://placehold.co/300x500/0891b2/ffffff?text=Reel+8', '/uploads/reels/reel8.mp4', 28, 4200000, 42000, 3400, 11200, 'Goal Mix - DJ Sports', NULL, 'Sports', NULL, 'published', 0, NULL, 82.4, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18');
+(1, 2, 'Dance Challenge #Kukua', 'Can you keep up with the Kukua challenge? 🔥💃', '/uploads/thumbnails/reel_thumb_1.jpg', '/uploads/reels/reel1.mp4', 30, 2450000, 24500, 1800, 5200, 'Kukua Beat - DJ MixMaster', NULL, 'Dance', NULL, 'published', 1, NULL, 87.5, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(2, 2, 'Cooking Jollof Rice', 'My secret recipe revealed! 🍚', '/uploads/thumbnails/reel_thumb_2.jpg', '/uploads/reels/reel2.mp4', 45, 1800000, 18900, 3200, 8100, 'Afro Kitchen Vibes - BeatMaker', NULL, 'Food', NULL, 'published', 0, NULL, 72.3, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(3, 2, 'Nairobi Night Vibes', 'Night out in the city 🌃', '/uploads/thumbnails/reel_thumb_3.jpg', '/uploads/reels/reel3.mp4', 22, 980000, 9800, 560, 1900, 'Original Sound - ZaraKe', NULL, 'Lifestyle', NULL, 'published', 0, NULL, 65.1, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(4, 2, 'AI Art is Crazy', 'Watch what AI created in 30 seconds 🤖', '/uploads/thumbnails/reel_thumb_4.jpg', '/uploads/reels/reel4.mp4', 58, 3100000, 31200, 5600, 12400, 'Digital Dreams - SynthWave', NULL, 'Tech', NULL, 'published', 1, NULL, 91.2, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(5, 2, 'Afrobeats Studio Session', 'New track dropping this Friday 🎧🔥', '/uploads/thumbnails/reel_thumb_5.jpg', '/uploads/reels/reel5.mp4', 35, 1200000, 12100, 890, 3400, 'Afro Drop (Preview) - BeatMaker', NULL, 'Music', NULL, 'published', 0, NULL, 68.7, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(6, 2, 'Comedy: African Mom', 'When your African mom finds your wallet balance 😂💰', '/uploads/thumbnails/reel_thumb_6.jpg', '/uploads/reels/reel6.mp4', 40, 5600000, 56300, 8900, 24100, 'Original Sound - ZaraKe', NULL, 'Comedy', NULL, 'published', 1, NULL, 95.8, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(7, 2, 'Skincare Routine', 'The routine that ACTUALLY works ✨', '/uploads/thumbnails/reel_thumb_7.jpg', '/uploads/reels/reel7.mp4', 55, 870000, 8700, 421, 1900, 'Soft Vibes - ChillBeats', NULL, 'Beauty', NULL, 'published', 0, NULL, 54.2, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(8, 2, 'Football Skills', 'Check these moves ⚽', '/uploads/thumbnails/reel_thumb_8.jpg', '/uploads/reels/reel8.mp4', 28, 4200000, 42000, 3400, 11200, 'Goal Mix - DJ Sports', NULL, 'Sports', NULL, 'published', 0, NULL, 82.4, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18');
 
 -- --------------------------------------------------------
 
@@ -346,8 +346,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `username`, `email`, `password`, `avatar`, `bio`, `phone`, `role`, `provider`, `provider_id`, `email_verified_at`, `phone_verified_at`, `is_verified`, `is_banned`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 'DTTube Admin', 'admin', 'admin@dttube.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://placehold.co/100x100/e11d48/ffffff?text=AD', 'Platform administrator', NULL, 'admin', NULL, NULL, '2026-05-21 14:52:18', NULL, 1, 0, NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(2, 'Zara Ke', 'zarake', 'zarake@dttube.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://placehold.co/100x100/6d28d9/ffffff?text=ZK', 'Dancer & content creator from Nairobi 💃🔥', NULL, 'creator', NULL, NULL, '2026-05-21 14:52:18', NULL, 1, 0, NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18');
+(1, 'DTTube Admin', 'admin', 'admin@dttube.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '/uploads/profiles/admin.jpg', 'Platform administrator', NULL, 'admin', NULL, NULL, '2026-05-21 14:52:18', NULL, 1, 0, NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(2, 'Zara Ke', 'zarake', 'zarake@dttube.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '/uploads/profiles/zarake.jpg', 'Dancer & content creator from Nairobi 💃🔥', NULL, 'creator', NULL, NULL, '2026-05-21 14:52:18', NULL, 1, 0, NULL, '2026-05-21 14:52:18', '2026-05-21 14:52:18');
 
 -- --------------------------------------------------------
 
@@ -385,12 +385,12 @@ CREATE TABLE `videos` (
 --
 
 INSERT INTO `videos` (`id`, `user_id`, `title`, `description`, `thumbnail`, `video_url`, `stream_key`, `duration`, `views`, `likes`, `comments_count`, `shares`, `category`, `tags`, `status`, `is_featured`, `is_monetized`, `ai_captions`, `viral_score`, `published_at`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Building a Startup in Africa - Full Documentary', 'The complete journey of building a tech startup from Nairobi', 'https://placehold.co/400x225/6d28d9/ffffff?text=Video+1', '/uploads/videos/video1.mp4', NULL, 2720, 1200000, 45000, 2300, 8900, 'Tech', NULL, 'published', 1, 1, NULL, 78.5, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(2, 2, 'How to Make Money as a Creator in 2025', 'Complete guide to monetizing your content', 'https://placehold.co/400x225/dc2626/ffffff?text=Video+2', '/uploads/videos/video2.mp4', NULL, 1335, 890000, 32000, 1800, 6700, 'Business', NULL, 'published', 1, 1, NULL, 73.2, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(3, 2, 'Lagos to Nairobi: Road Trip Vlog', 'Cross-country adventure through East and West Africa', 'https://placehold.co/400x225/059669/ffffff?text=Video+3', '/uploads/videos/video3.mp4', NULL, 1905, 670000, 21000, 980, 4500, 'Travel', NULL, 'published', 0, 1, NULL, 61.8, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(4, 2, 'Learn Flutter in 2 Hours - Complete Course', 'Full Flutter development course for beginners', 'https://placehold.co/400x225/2563eb/ffffff?text=Video+4', '/uploads/videos/video4.mp4', NULL, 7290, 2100000, 89000, 5600, 23000, 'Education', NULL, 'published', 1, 1, NULL, 92.1, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(5, 2, 'Best Afrobeat Mix 2025', 'Non-stop afrobeats mix for your playlist', 'https://placehold.co/400x225/d97706/ffffff?text=Video+5', '/uploads/videos/video5.mp4', NULL, 4500, 3500000, 120000, 7800, 34000, 'Music', NULL, 'published', 1, 1, NULL, 96.3, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
-(6, 2, 'Street Food Tour: Accra Edition', 'Trying the best street food in Accra, Ghana', 'https://placehold.co/400x225/e11d48/ffffff?text=Video+6', '/uploads/videos/video6.mp4', NULL, 1110, 450000, 15000, 670, 2100, 'Food', NULL, 'published', 0, 1, NULL, 58.4, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18');
+(1, 2, 'Building a Startup in Africa - Full Documentary', 'The complete journey of building a tech startup from Nairobi', '/uploads/thumbnails/reel_thumb_1.jpg', '/uploads/videos/video1.mp4', NULL, 2720, 1200000, 45000, 2300, 8900, 'Tech', NULL, 'published', 1, 1, NULL, 78.5, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(2, 2, 'How to Make Money as a Creator in 2025', 'Complete guide to monetizing your content', '/uploads/thumbnails/reel_thumb_2.jpg', '/uploads/videos/video2.mp4', NULL, 1335, 890000, 32000, 1800, 6700, 'Business', NULL, 'published', 1, 1, NULL, 73.2, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(3, 2, 'Lagos to Nairobi: Road Trip Vlog', 'Cross-country adventure through East and West Africa', '/uploads/thumbnails/reel_thumb_3.jpg', '/uploads/videos/video3.mp4', NULL, 1905, 670000, 21000, 980, 4500, 'Travel', NULL, 'published', 0, 1, NULL, 61.8, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(4, 2, 'Learn Flutter in 2 Hours - Complete Course', 'Full Flutter development course for beginners', '/uploads/thumbnails/reel_thumb_4.jpg', '/uploads/videos/video4.mp4', NULL, 7290, 2100000, 89000, 5600, 23000, 'Education', NULL, 'published', 1, 1, NULL, 92.1, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(5, 2, 'Best Afrobeat Mix 2025', 'Non-stop afrobeats mix for your playlist', '/uploads/thumbnails/reel_thumb_5.jpg', '/uploads/videos/video5.mp4', NULL, 4500, 3500000, 120000, 7800, 34000, 'Music', NULL, 'published', 1, 1, NULL, 96.3, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18'),
+(6, 2, 'Street Food Tour: Accra Edition', 'Trying the best street food in Accra, Ghana', '/uploads/thumbnails/reel_thumb_6.jpg', '/uploads/videos/video6.mp4', NULL, 1110, 450000, 15000, 670, 2100, 'Food', NULL, 'published', 0, 1, NULL, 58.4, '2026-05-21 14:52:18', '2026-05-21 14:52:18', '2026-05-21 14:52:18');
 
 -- --------------------------------------------------------
 

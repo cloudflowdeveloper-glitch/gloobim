@@ -1,8 +1,8 @@
 USE `dttube`;
 
 INSERT INTO `users` (`id`, `name`, `username`, `email`, `password`, `avatar`, `bio`, `role`, `provider`, `provider_id`, `email_verified_at`, `is_verified`, `created_at`, `updated_at`) VALUES
-(1, 'DTTube Admin', 'admin', 'admin@dttube.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://placehold.co/100x100/e11d48/ffffff?text=AD', 'Platform administrator', 'admin', NULL, NULL, NOW(), 1, NOW(), NOW()),
-(2, 'Zara Ke', 'zarake', 'zarake@dttube.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://placehold.co/100x100/6d28d9/ffffff?text=ZK', 'Dancer & content creator from Nairobi 💃🔥', 'creator', NULL, NULL, NOW(), 1, NOW(), NOW());
+(1, 'DTTube Admin', 'admin', 'admin@dttube.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '/uploads/profiles/admin.jpg', 'Platform administrator', 'admin', NULL, NULL, NOW(), 1, NOW(), NOW()),
+(2, 'Zara Ke', 'zarake', 'zarake@dttube.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '/uploads/profiles/zarake.jpg', 'Dancer & content creator from Nairobi 💃🔥', 'creator', NULL, NULL, NOW(), 1, NOW(), NOW());
 
 INSERT INTO `wallets` (`id`, `user_id`, `balance`, `currency`, `is_active`, `created_at`, `updated_at`) VALUES
 (1, 1, 0.00, 'KES', 1, NOW(), NOW()),
@@ -22,25 +22,25 @@ INSERT INTO `reels` (`id`, `user_id`, `title`, `description`, `thumbnail`, `vide
 (8, 2, 'Football Skills', 'Check these moves ⚽', '/uploads/thumbnails/reel_thumb_8.jpg', '/uploads/reels/reel8.gif', 28, 4200000, 42000, 3400, 11200, 'Goal Mix - DJ Sports', 'Sports', 'published', 0, 82.4, NOW(), NOW(), NOW());
 
 INSERT INTO `videos` (`id`, `user_id`, `title`, `description`, `thumbnail`, `video_url`, `duration`, `views`, `likes`, `comments_count`, `shares`, `category`, `status`, `is_featured`, `is_monetized`, `viral_score`, `published_at`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Building a Startup in Africa - Full Documentary', 'The complete journey of building a tech startup from Nairobi', 'https://placehold.co/400x225/6d28d9/ffffff?text=Video+1', '/uploads/videos/video1.mp4', 2720, 1200000, 45000, 2300, 8900, 'Tech', 'published', 1, 1, 78.5, NOW(), NOW(), NOW()),
-(2, 2, 'How to Make Money as a Creator in 2025', 'Complete guide to monetizing your content', 'https://placehold.co/400x225/dc2626/ffffff?text=Video+2', '/uploads/videos/video2.mp4', 1335, 890000, 32000, 1800, 6700, 'Business', 'published', 1, 1, 73.2, NOW(), NOW(), NOW()),
-(3, 2, 'Lagos to Nairobi: Road Trip Vlog', 'Cross-country adventure through East and West Africa', 'https://placehold.co/400x225/059669/ffffff?text=Video+3', '/uploads/videos/video3.mp4', 1905, 670000, 21000, 980, 4500, 'Travel', 'published', 0, 1, 61.8, NOW(), NOW(), NOW()),
-(4, 2, 'Learn Flutter in 2 Hours - Complete Course', 'Full Flutter development course for beginners', 'https://placehold.co/400x225/2563eb/ffffff?text=Video+4', '/uploads/videos/video4.mp4', 7290, 2100000, 89000, 5600, 23000, 'Education', 'published', 1, 1, 92.1, NOW(), NOW(), NOW()),
-(5, 2, 'Best Afrobeat Mix 2025', 'Non-stop afrobeats mix for your playlist', 'https://placehold.co/400x225/d97706/ffffff?text=Video+5', '/uploads/videos/video5.mp4', 4500, 3500000, 120000, 7800, 34000, 'Music', 'published', 1, 1, 96.3, NOW(), NOW(), NOW()),
-(6, 2, 'Street Food Tour: Accra Edition', 'Trying the best street food in Accra, Ghana', 'https://placehold.co/400x225/e11d48/ffffff?text=Video+6', '/uploads/videos/video6.mp4', 1110, 450000, 15000, 670, 2100, 'Food', 'published', 0, 1, 58.4, NOW(), NOW(), NOW());
+(1, 2, 'Building a Startup in Africa - Full Documentary', 'The complete journey of building a tech startup from Nairobi', '/uploads/thumbnails/reel_thumb_1.jpg', '/uploads/videos/video1.mp4', 2720, 1200000, 45000, 2300, 8900, 'Tech', 'published', 1, 1, 78.5, NOW(), NOW(), NOW()),
+(2, 2, 'How to Make Money as a Creator in 2025', 'Complete guide to monetizing your content', '/uploads/thumbnails/reel_thumb_2.jpg', '/uploads/videos/video2.mp4', 1335, 890000, 32000, 1800, 6700, 'Business', 'published', 1, 1, 73.2, NOW(), NOW(), NOW()),
+(3, 2, 'Lagos to Nairobi: Road Trip Vlog', 'Cross-country adventure through East and West Africa', '/uploads/thumbnails/reel_thumb_3.jpg', '/uploads/videos/video3.mp4', 1905, 670000, 21000, 980, 4500, 'Travel', 'published', 0, 1, 61.8, NOW(), NOW(), NOW()),
+(4, 2, 'Learn Flutter in 2 Hours - Complete Course', 'Full Flutter development course for beginners', '/uploads/thumbnails/reel_thumb_4.jpg', '/uploads/videos/video4.mp4', 7290, 2100000, 89000, 5600, 23000, 'Education', 'published', 1, 1, 92.1, NOW(), NOW(), NOW()),
+(5, 2, 'Best Afrobeat Mix 2025', 'Non-stop afrobeats mix for your playlist', '/uploads/thumbnails/reel_thumb_5.jpg', '/uploads/videos/video5.mp4', 4500, 3500000, 120000, 7800, 34000, 'Music', 'published', 1, 1, 96.3, NOW(), NOW(), NOW()),
+(6, 2, 'Street Food Tour: Accra Edition', 'Trying the best street food in Accra, Ghana', '/uploads/thumbnails/reel_thumb_6.jpg', '/uploads/videos/video6.mp4', 1110, 450000, 15000, 670, 2100, 'Food', 'published', 0, 1, 58.4, NOW(), NOW(), NOW());
 
 INSERT INTO `posts` (`id`, `user_id`, `content`, `image_url`, `likes`, `comments_count`, `shares`, `status`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Just dropped a new dance challenge! Who can keep up? 🔥💃 #KukuaChallenge #DTTube', 'https://placehold.co/600x400/6d28d9/ffffff?text=Post+1', 12400, 843, 2100, 'published', NOW(), NOW()),
-(2, 2, 'New afrobeats pack dropping this Friday on my creator store! 🎧🔥 Pre-order now', 'https://placehold.co/600x300/d97706/ffffff?text=Post+2', 3200, 198, 567, 'published', NOW(), NOW()),
+(1, 2, 'Just dropped a new dance challenge! Who can keep up? 🔥💃 #KukuaChallenge #DTTube', '/uploads/posts/post_1.jpg', 12400, 843, 2100, 'published', NOW(), NOW()),
+(2, 2, 'New afrobeats pack dropping this Friday on my creator store! 🎧🔥 Pre-order now', '/uploads/posts/post_2.jpg', 3200, 198, 567, 'published', NOW(), NOW()),
 (3, 2, 'When your African mom discovers you have a wallet balance 😂💰 #Comedy #Relatable', NULL, 24300, 3800, 8900, 'published', NOW(), NOW());
 
 INSERT INTO `livestreams` (`id`, `user_id`, `title`, `description`, `thumbnail`, `stream_key`, `stream_url`, `viewers`, `peak_viewers`, `total_likes`, `total_gifts`, `gift_earnings`, `status`, `started_at`, `ended_at`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Late Night Music Session', 'Live music and chat 🎵', 'https://placehold.co/400x225/d97706/ffffff?text=LIVE+1', 'seed_sk_1', '/livestream/1', 4200, 8500, 234, 56, 4250.00, 'live', NOW(), NULL, NOW(), NOW()),
-(2, 2, 'Q&A: Starting Your Creator Journey', 'Ask me anything about content creation', 'https://placehold.co/400x225/6d28d9/ffffff?text=LIVE+2', 'seed_sk_2', '/livestream/2', 2800, 5100, 89, 23, 1820.00, 'live', NOW(), NULL, NOW(), NOW()),
-(3, 2, 'Weekend Vibes: Acoustic Session', 'Unplugged acoustic performances', 'https://placehold.co/400x225/059669/ffffff?text=Scheduled+1', 'seed_sk_3', '/livestream/3', 0, 0, 0, 0, 0.00, 'scheduled', DATE_ADD(NOW(), INTERVAL 2 DAY), NULL, NOW(), NOW()),
-(4, 2, 'Creator Workshop: Editing Tips', 'Learn video editing like a pro', 'https://placehold.co/400x225/2563eb/ffffff?text=Scheduled+2', 'seed_sk_4', '/livestream/4', 0, 0, 0, 0, 0.00, 'scheduled', DATE_ADD(NOW(), INTERVAL 1 DAY), NULL, NOW(), NOW()),
-(5, 1, 'DTTube Town Hall', 'Platform updates and roadmap discussion', 'https://placehold.co/400x225/7c3aed/ffffff?text=Past+Stream', 'seed_sk_5', '/livestream/5', 12500, 18200, 567, 89, 8900.00, 'ended', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY), NOW(), NOW()),
-(6, 2, 'Afrobeats Dance Tutorial', 'Learn the hottest dance moves', 'https://placehold.co/400x225/dc2626/ffffff?text=Past+Stream+2', 'seed_sk_6', '/livestream/6', 8900, 12400, 345, 67, 5600.00, 'ended', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), NOW(), NOW());
+(1, 2, 'Late Night Music Session', 'Live music and chat 🎵', '/uploads/livestreams/live_1.jpg', 'seed_sk_1', '/livestream/1', 4200, 8500, 234, 56, 4250.00, 'live', NOW(), NULL, NOW(), NOW()),
+(2, 2, 'Q&A: Starting Your Creator Journey', 'Ask me anything about content creation', '/uploads/livestreams/live_2.jpg', 'seed_sk_2', '/livestream/2', 2800, 5100, 89, 23, 1820.00, 'live', NOW(), NULL, NOW(), NOW()),
+(3, 2, 'Weekend Vibes: Acoustic Session', 'Unplugged acoustic performances', '/uploads/livestreams/live_3.jpg', 'seed_sk_3', '/livestream/3', 0, 0, 0, 0, 0.00, 'scheduled', DATE_ADD(NOW(), INTERVAL 2 DAY), NULL, NOW(), NOW()),
+(4, 2, 'Creator Workshop: Editing Tips', 'Learn video editing like a pro', '/uploads/livestreams/live_4.jpg', 'seed_sk_4', '/livestream/4', 0, 0, 0, 0, 0.00, 'scheduled', DATE_ADD(NOW(), INTERVAL 1 DAY), NULL, NOW(), NOW()),
+(5, 1, 'DTTube Town Hall', 'Platform updates and roadmap discussion', '/uploads/livestreams/live_5.jpg', 'seed_sk_5', '/livestream/5', 12500, 18200, 567, 89, 8900.00, 'ended', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY), NOW(), NOW()),
+(6, 2, 'Afrobeats Dance Tutorial', 'Learn the hottest dance moves', '/uploads/livestreams/live_6.jpg', 'seed_sk_6', '/livestream/6', 8900, 12400, 345, 67, 5600.00, 'ended', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), NOW(), NOW());
 
 INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `body`, `is_read`, `created_at`) VALUES
 (1, 1, 'welcome', 'Welcome to DTTube!', 'Your admin account is ready.', 0, NOW()),
