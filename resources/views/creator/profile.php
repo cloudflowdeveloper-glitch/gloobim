@@ -15,8 +15,15 @@ $marketplaceCount = $data['marketplaceCount'] ?? 0;
 $totalViews = $data['totalViews'] ?? 0;
 $totalLikes = $data['totalLikes'] ?? 0;
 $walletBalance = $data['walletBalance'] ?? 0;
+$walletCurrency = $data['walletCurrency'] ?? 'KES';
+$todayEarnings = $data['todayEarnings'] ?? 0;
+$totalRevenue = $data['totalRevenue'] ?? 0;
+$revenueBreakdown = $data['revenueBreakdown'] ?? [];
 $postsCount = $data['postsCount'] ?? count($posts);
 $videosCount = $data['videosCount'] ?? count($videos);
+
+$currencySymbol = $walletCurrency === 'KES' ? 'KES ' : '$';
+$currencySymbolShort = $walletCurrency === 'KES' ? 'KSh ' : '$';
 
 $name = $profileUser['name'] ?? 'User';
 $username = $profileUser['username'] ?? 'user';
@@ -64,13 +71,6 @@ if ($name) {
         background: linear-gradient(90deg, #9333ea 0%, #6d28d9 50%, #4f46e5 100%);
         box-shadow: 0 0 8px rgba(147, 51, 234, 0.4);
     }
-
-    /* Pulse animation for LIVE badge */
-    @keyframes livePulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.3); }
-    }
-    .live-dot { animation: livePulse 1.5s ease-in-out infinite; }
 
     /* Fade-in animations for sections */
     @keyframes fadeSlideUp {
@@ -233,11 +233,15 @@ if ($name) {
         <div class="mt-4 pt-3 border-t border-[#2a2a3e]/50">
             <p class="text-zinc-400 text-xs mb-0.5">Today's Earnings</p>
             <div class="flex items-end gap-2">
-                <span class="text-white text-xl font-bold leading-none">$156.80</span>
+                <span class="text-white text-xl font-bold leading-none"><?= $currencySymbolShort . number_format($todayEarnings, 2) ?></span>
+                <?php if ($todayEarnings > 0): ?>
                 <span class="flex items-center gap-0.5 text-emerald-400 text-[10px] font-semibold mb-0.5">
                     <svg width="8" height="8" viewBox="0 0 8 8"><path d="M4 1L7 5H1L4 1Z" fill="#34d399"/></svg>
-                    +18.6% vs yesterday
+                    Earning today
                 </span>
+                <?php else: ?>
+                <span class="text-zinc-600 text-[10px] font-medium mb-0.5">No earnings today yet</span>
+                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -307,7 +311,7 @@ if ($name) {
                 <div class="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center mb-2">
                     <span class="material-icons-round text-amber-400 text-base">attach_money</span>
                 </div>
-                <p class="text-white font-bold text-lg leading-none mb-0.5"><?= '$' . number_format($walletBalance, 2) ?></p>
+                <p class="text-white font-bold text-lg leading-none mb-0.5"><?= $currencySymbolShort . number_format($walletBalance, 2) ?></p>
                 <p class="text-zinc-500 text-[10px] font-medium mb-1">Revenue</p>
             </div>
 
@@ -615,128 +619,64 @@ if ($name) {
 
             <!-- Revenue amount -->
             <div class="flex items-end gap-2 mb-2">
-                <span class="text-white text-xl font-bold leading-none">$12,540.60</span>
+                <span class="text-white text-xl font-bold leading-none"><?= $currencySymbolShort . number_format($totalRevenue, 2) ?></span>
+                <?php if ($totalRevenue > 0): ?>
                 <span class="flex items-center gap-0.5 text-emerald-400 text-[10px] font-semibold mb-0.5">
                     <svg width="8" height="8" viewBox="0 0 8 8"><path d="M4 1L7 5H1L4 1Z" fill="#34d399"/></svg>
-                    +28.6%
+                    from wallet
                 </span>
+                <?php else: ?>
+                <span class="text-zinc-600 text-[10px] font-medium mb-0.5">No revenue yet</span>
+                <?php endif; ?>
             </div>
 
-            <!-- Sparkline -->
-            <svg viewBox="0 0 200 40" class="w-full mb-4" style="height: 40px;" preserveAspectRatio="none">
-                <polyline points="0,35 30,28 60,30 90,18 120,22 150,10 180,12 200,5" fill="none" stroke="#9333ea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sparkline-anim"/>
-                <polyline points="0,35 30,28 60,30 90,18 120,22 150,10 180,12 200,5 200,40 0,40" fill="url(#sparkGrad)" stroke="none" opacity="0.2"/>
-                <defs>
-                    <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#9333ea"/>
-                        <stop offset="100%" stop-color="#9333ea" stop-opacity="0"/>
-                    </linearGradient>
-                </defs>
-            </svg>
+            <!-- Wallet Balance -->
+            <div class="flex items-center justify-between bg-surface-200/50 rounded-xl p-3 mb-4">
+                <div>
+                    <p class="text-zinc-500 text-[10px]">Wallet Balance</p>
+                    <p class="text-white font-bold text-base leading-none mt-0.5"><?= $currencySymbol . number_format($walletBalance, 2) ?></p>
+                </div>
+                <a href="/wallet/withdraw" class="px-3 py-1.5 rounded-lg text-white text-[10px] font-semibold" style="background: linear-gradient(135deg, #9333ea 0%, #6d28d9 50%, #4f46e5 100%);">
+                    Withdraw
+                </a>
+            </div>
 
             <!-- Revenue Breakdown -->
+            <?php if ($totalRevenue > 0): ?>
             <div class="space-y-2.5">
-                <!-- Ads -->
+                <?php
+                $colorMap = [
+                    'purple' => 'bg-purple-600',
+                    'red' => 'bg-red-500',
+                    'blue' => 'bg-blue-500',
+                    'zinc' => 'bg-zinc-500',
+                ];
+                $delay = 0;
+                foreach ($revenueBreakdown as $key => $rb):
+                    if ($rb['amount'] <= 0) continue;
+                    $pct = $totalRevenue > 0 ? round(($rb['amount'] / $totalRevenue) * 100, 1) : 0;
+                    $barColor = $colorMap[$rb['color']] ?? 'bg-zinc-500';
+                ?>
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <div class="flex items-center gap-1.5">
-                            <div class="w-2 h-2 rounded-full bg-purple-600"></div>
-                            <span class="text-zinc-300 text-xs">Ads</span>
+                            <div class="w-2 h-2 rounded-full <?= $barColor ?>"></div>
+                            <span class="text-zinc-300 text-xs"><?= htmlspecialchars($rb['label']) ?></span>
                         </div>
-                        <span class="text-white text-xs font-semibold">57.8%</span>
+                        <span class="text-white text-xs font-semibold"><?= $pct ?>%</span>
                     </div>
                     <div class="w-full h-1 rounded-full bg-surface-200 overflow-hidden">
-                        <div class="h-full rounded-full bg-purple-600 rev-bar" style="width: 57.8%;"></div>
+                        <div class="h-full rounded-full <?= $barColor ?> rev-bar" style="width: <?= $pct ?>%; animation-delay: <?= $delay ?>s;"></div>
                     </div>
                 </div>
-                <!-- Gifts -->
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                            <span class="text-zinc-300 text-xs">Gifts</span>
-                        </div>
-                        <span class="text-white text-xs font-semibold">28.0%</span>
-                    </div>
-                    <div class="w-full h-1 rounded-full bg-surface-200 overflow-hidden">
-                        <div class="h-full rounded-full bg-red-500 rev-bar" style="width: 28%; animation-delay: 0.1s;"></div>
-                    </div>
-                </div>
-                <!-- Sponsors -->
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span class="text-zinc-300 text-xs">Sponsors</span>
-                        </div>
-                        <span class="text-white text-xs font-semibold">15.8%</span>
-                    </div>
-                    <div class="w-full h-1 rounded-full bg-surface-200 overflow-hidden">
-                        <div class="h-full rounded-full bg-blue-500 rev-bar" style="width: 15.8%; animation-delay: 0.2s;"></div>
-                    </div>
-                </div>
-                <!-- Other -->
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-2 h-2 rounded-full bg-zinc-500"></div>
-                            <span class="text-zinc-300 text-xs">Other</span>
-                        </div>
-                        <span class="text-white text-xs font-semibold">13.4%</span>
-                    </div>
-                    <div class="w-full h-1 rounded-full bg-surface-200 overflow-hidden">
-                        <div class="h-full rounded-full bg-zinc-500 rev-bar" style="width: 13.4%; animation-delay: 0.3s;"></div>
-                    </div>
-                </div>
+                <?php $delay += 0.1; endforeach; ?>
             </div>
-        </div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════ -->
-    <!-- SECTION 5c: LIVE NOW                                   -->
-    <!-- ═══════════════════════════════════════════════════ -->
-    <section class="mb-3 fade-section">
-        <div class="bg-[#14141c] rounded-2xl border border-red-500/20 p-4">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                    <h3 class="text-white text-sm font-bold">Live Now</h3>
-                    <!-- LIVE Badge -->
-                    <span class="flex items-center gap-1 bg-red-500/15 text-red-400 rounded-full px-2 py-0.5 text-[10px] font-bold">
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 live-dot"></span>
-                        LIVE
-                    </span>
-                </div>
+            <?php else: ?>
+            <div class="text-center py-6">
+                <span class="material-icons-round text-zinc-700 text-3xl">account_balance_wallet</span>
+                <p class="text-zinc-500 text-xs mt-2">Start earning through gifts, tips, and ad revenue</p>
             </div>
-
-            <!-- 2x2 Metrics Grid -->
-            <div class="grid grid-cols-2 gap-3 mb-3">
-                <div class="bg-surface-200/50 rounded-xl p-2.5">
-                    <p class="text-zinc-500 text-[10px] mb-0.5">Live Viewers</p>
-                    <p class="text-white font-bold text-base leading-none">3,254</p>
-                </div>
-                <div class="bg-surface-200/50 rounded-xl p-2.5">
-                    <p class="text-zinc-500 text-[10px] mb-0.5">Peak Viewers</p>
-                    <p class="text-white font-bold text-base leading-none">8,921</p>
-                </div>
-                <div class="bg-surface-200/50 rounded-xl p-2.5">
-                    <p class="text-zinc-500 text-[10px] mb-0.5">Watchtime</p>
-                    <p class="text-white font-bold text-base leading-none">1,256 hrs</p>
-                </div>
-                <div class="bg-surface-200/50 rounded-xl p-2.5">
-                    <p class="text-zinc-500 text-[10px] mb-0.5">Gifts</p>
-                    <p class="text-white font-bold text-base leading-none">$456.80</p>
-                </div>
-            </div>
-
-            <!-- Viewer Trend -->
-            <svg viewBox="0 0 200 30" class="w-full mb-3" style="height: 30px;" preserveAspectRatio="none">
-                <polyline points="0,25 25,20 50,22 75,15 100,18 125,10 150,12 175,8 200,5" fill="none" stroke="#9333ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="sparkline-anim"/>
-            </svg>
-
-            <!-- Go to Live Button -->
-            <a href="/livestream" class="block w-full text-center py-2.5 rounded-lg text-white text-xs font-semibold" style="background: linear-gradient(135deg, #9333ea 0%, #6d28d9 50%, #4f46e5 100%);">
-                Go to Live
-            </a>
+            <?php endif; ?>
         </div>
     </section>
 

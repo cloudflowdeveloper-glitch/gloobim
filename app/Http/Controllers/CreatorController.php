@@ -143,6 +143,15 @@ class CreatorController extends Controller
         $totalViews = 0;
         $totalLikes = 0;
         $walletBalance = 0;
+        $walletCurrency = 'KES';
+        $todayEarnings = 0;
+        $totalRevenue = 0;
+        $revenueBreakdown = [
+            'gift_received' => ['label' => 'Gifts', 'amount' => 0, 'color' => 'red'],
+            'earnings' => ['label' => 'Ads', 'amount' => 0, 'color' => 'purple'],
+            'tip' => ['label' => 'Tips', 'amount' => 0, 'color' => 'blue'],
+            'other' => ['label' => 'Other', 'amount' => 0, 'color' => 'zinc'],
+        ];
 
         try {
             if ($username === 'me' && $user) {
@@ -221,12 +230,55 @@ class CreatorController extends Controller
                 );
                 $totalLikes = (int)($row['l'] ?? 0);
 
-                // Wallet balance
-                $row = Database::queryOne(
-                    "SELECT COALESCE(SUM(balance), 0) AS b FROM wallets WHERE user_id = ?",
+                // Wallet data: balance + currency
+                $wallet = Database::queryOne(
+                    "SELECT balance, currency FROM wallets WHERE user_id = ? LIMIT 1",
                     [$profileUser['id']]
                 );
-                $walletBalance = (float)($row['b'] ?? 0);
+                if ($wallet) {
+                    $walletBalance = (float)($wallet['balance'] ?? 0);
+                    $walletCurrency = $wallet['currency'] ?? 'KES';
+                }
+
+                // Wallet revenue from transactions
+                $walletId = Database::queryOne("SELECT id FROM wallets WHERE user_id = ? LIMIT 1", [$profileUser['id']]);
+                if ($walletId) {
+                    $wid = $walletId['id'];
+
+                    // Today's earnings (gift_received, earnings, tip)
+                    $row = Database::queryOne(
+                        "SELECT COALESCE(SUM(ABS(amount)), 0) AS e FROM wallet_transactions 
+                         WHERE wallet_id = ? AND type IN ('gift_received', 'earnings', 'tip') 
+                         AND status = 'completed' AND DATE(created_at) = CURDATE()",
+                        [$wid]
+                    );
+                    $todayEarnings = (float)($row['e'] ?? 0);
+
+                    // Total revenue breakdown by type
+                    $breakdownRows = Database::query(
+                        "SELECT type, COALESCE(SUM(ABS(amount)), 0) AS total 
+                         FROM wallet_transactions 
+                         WHERE wallet_id = ? AND type IN ('gift_received', 'earnings', 'tip', 'subscription') 
+                         AND status = 'completed' 
+                         GROUP BY type",
+                        [$wid]
+                    );
+                    $totalRevenue = 0;
+                    foreach ($breakdownRows as $br) {
+                        $amt = (float)$br['total'];
+                        $totalRevenue += $amt;
+                        $type = $br['type'];
+                        if ($type === 'gift_received') {
+                            $revenueBreakdown['gift_received']['amount'] = $amt;
+                        } elseif ($type === 'earnings') {
+                            $revenueBreakdown['earnings']['amount'] = $amt;
+                        } elseif ($type === 'tip') {
+                            $revenueBreakdown['tip']['amount'] = $amt;
+                        } else {
+                            $revenueBreakdown['other']['amount'] += $amt;
+                        }
+                    }
+                }
             }
         } catch (\Exception $e) {}
 
@@ -242,6 +294,10 @@ class CreatorController extends Controller
             'totalViews' => $totalViews,
             'totalLikes' => $totalLikes,
             'walletBalance' => $walletBalance,
+            'walletCurrency' => $walletCurrency,
+            'todayEarnings' => $todayEarnings,
+            'totalRevenue' => $totalRevenue,
+            'revenueBreakdown' => $revenueBreakdown,
             'isOwnProfile' => $user && $profileUser && $user['id'] === $profileUser['id'],
         ]);
     }

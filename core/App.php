@@ -350,6 +350,170 @@ class App
             error_log("Globiim: placehold.co URL migration completed ({$totalFixed} replacements checked)");
             return true;
         });
+
+        // Migration: Seed more videos and reels from different users
+        static::runMigration('seed_videos_reels_v2', function () {
+            // Check if videos from other users already exist
+            $existingOther = Database::queryOne("SELECT COUNT(*) AS c FROM videos WHERE user_id > 2 AND status = 'published'");
+            if ($existingOther && (int)$existingOther['c'] > 0) return true;
+
+            $now = date('Y-m-d H:i:s');
+            $videos = [
+                // Marcus Tech (user 3) - Tech reviews
+                [3, 'Samsung Galaxy S25 Ultra Review - Is It Worth It?', 'Full review of Samsung\'s latest flagship after 30 days of daily use', '/uploads/thumbnails/reel_thumb_3.jpg', '', NULL, 1120, 340000, 18200, 890, 4200, 'Tech', 'published', 1, 1, 78.2],
+                [3, 'Top 5 Gadgets Under KES 10,000 in 2025', 'Budget tech that punches way above its price', '/uploads/thumbnails/reel_thumb_1.jpg', '', NULL, 845, 560000, 28700, 1200, 6300, 'Tech', 'published', 1, 1, 81.5],
+                // Amina Beauty (user 4) - Beauty
+                [4, 'Get This Glow: 5-Minute Makeup Routine', 'Quick makeup routine for busy African women', '/uploads/thumbnails/reel_thumb_7.jpg', '', NULL, 420, 890000, 45600, 2300, 8900, 'Beauty', 'published', 0, 1, 72.8],
+                [4, 'Natural Hair Care Mistakes You Are Making', 'Stop damaging your hair with these common mistakes', '/uploads/thumbnails/reel_thumb_4.jpg', '', NULL, 680, 1200000, 62300, 3400, 12000, 'Beauty', 'published', 1, 1, 85.3],
+                // Chef Kwame (user 5) - Food
+                [5, 'How to Make Perfect Jollof Rice Every Time', 'The ultimate Jollof rice recipe - no more debates needed!', '/uploads/thumbnails/reel_thumb_2.jpg', '', NULL, 920, 2800000, 145000, 8900, 34000, 'Food', 'published', 1, 1, 93.7],
+                [5, 'Nigerian Suya vs Ghanaian Chichinga - Taste Test', 'Which street food wins? We try both!', '/uploads/thumbnails/reel_thumb_5.jpg', '', NULL, 780, 1900000, 89000, 5600, 18000, 'Food', 'published', 0, 1, 79.4],
+                // DJ Pulse (user 6) - Music
+                [6, 'Making a Hit Afrobeats Track in 30 Minutes', 'Watch me produce a complete track from scratch', '/uploads/thumbnails/reel_thumb_5.jpg', '', NULL, 1800, 4200000, 210000, 12000, 45000, 'Music', 'published', 1, 1, 95.1],
+                [6, 'Top 10 Afrobeats Songs of 2025 So Far', 'The biggest Afrobeats bangers this year', '/uploads/thumbnails/reel_thumb_8.jpg', '', NULL, 2400, 5600000, 320000, 18000, 67000, 'Music', 'published', 1, 1, 97.8],
+                // Fit Sarah (user 7) - Fitness
+                [7, 'Full Body Workout - No Equipment Needed', 'Perfect home workout for all fitness levels', '/uploads/thumbnails/reel_thumb_6.jpg', '', NULL, 1200, 1500000, 78000, 4500, 21000, 'Education', 'published', 1, 1, 84.6],
+                [7, '30-Day Transformation Challenge Results', 'Real results from our community challenge', '/uploads/thumbnails/reel_thumb_3.jpg', '', NULL, 900, 2100000, 112000, 6700, 28000, 'Education', 'published', 0, 1, 89.2],
+                // Travel Dave (user 8) - Travel
+                [8, 'Zanzibar on a Budget - Complete Travel Guide', 'Everything you need to know before visiting Zanzibar', '/uploads/thumbnails/reel_thumb_1.jpg', '', NULL, 1560, 890000, 45000, 2300, 12000, 'Travel', 'published', 1, 1, 76.3],
+                [8, 'Safari in Maasai Mara - What They Don\'t Tell You', 'The truth about going on safari in Kenya', '/uploads/thumbnails/reel_thumb_7.jpg', '', NULL, 2100, 1200000, 67000, 3400, 18000, 'Travel', 'published', 0, 1, 82.1],
+                // Zara Ke (user 2) - More content
+                [2, 'Behind the Scenes of My Latest Music Video', 'The making of my biggest video yet', '/uploads/thumbnails/reel_thumb_8.jpg', '', NULL, 1450, 780000, 42000, 2100, 9800, 'Music', 'published', 1, 1, 71.6],
+                [2, 'Day in My Life as a Kenyan Content Creator', 'Follow me for a full day in Nairobi', '/uploads/thumbnails/reel_thumb_6.jpg', '', NULL, 1100, 1500000, 78000, 4500, 21000, 'Lifestyle', 'published', 0, 1, 78.9],
+            ];
+
+            foreach ($videos as $v) {
+                Database::insert('videos', [
+                    'user_id' => $v[0],
+                    'title' => $v[1],
+                    'description' => $v[2],
+                    'thumbnail' => $v[3],
+                    'video_url' => $v[4],
+                    'duration' => $v[6],
+                    'views' => $v[7],
+                    'likes' => $v[8],
+                    'comments_count' => $v[9],
+                    'shares' => $v[10],
+                    'category' => $v[11],
+                    'status' => $v[12],
+                    'is_featured' => $v[13],
+                    'is_monetized' => $v[14],
+                    'viral_score' => $v[15],
+                    'published_at' => $now,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-' . rand(1, 30) . ' days')),
+                    'updated_at' => $now,
+                ]);
+            }
+
+            // Seed more reels from different users
+            $reels = [
+                // Marcus Tech
+                [3, 'Unboxing the New MacBook Pro M4', 'Apple just dropped this beast!', '/uploads/thumbnails/reel_thumb_1.jpg', '', 25, 450000, 23000, 1200, 4500, 'Tech Review - Audio', NULL, 'Tech', 'published', 1, 76.4],
+                [3, 'This Phone Camera is INSANE', 'You won\'t believe these sample photos', '/uploads/thumbnails/reel_thumb_4.jpg', '', 35, 780000, 41000, 2800, 9200, 'Original Sound', NULL, 'Tech', 'published', 0, 71.2],
+                // Amina Beauty
+                [4, 'Healthy Skin in 7 Days Challenge', 'Day 1 of my skincare challenge', '/uploads/thumbnails/reel_thumb_7.jpg', '', 40, 620000, 32000, 1800, 5600, 'Soft Vibes', NULL, 'Beauty', 'published', 1, 68.5],
+                [4, 'Makeup Transformation for African Skin', 'From bare face to GLAM in 60 seconds', '/uploads/thumbnails/reel_thumb_2.jpg', '', 60, 980000, 51000, 3200, 11000, 'Trending Sound', NULL, 'Beauty', 'published', 1, 82.1],
+                // Chef Kwame
+                [5, 'Street Food in Lagos - Best Spots!', 'Found the BEST amala and ewedu in Lagos', '/uploads/thumbnails/reel_thumb_5.jpg', '', 45, 1800000, 95000, 5600, 21000, 'Afro Kitchen Vibes', NULL, 'Food', 'published', 1, 88.7],
+                [5, 'Making Fufu from Scratch', 'My grandmother\'s recipe that never fails', '/uploads/thumbnails/reel_thumb_3.jpg', '', 50, 1200000, 62000, 3400, 15000, 'Original Sound', NULL, 'Food', 'published', 0, 75.3],
+                // DJ Pulse
+                [6, 'DJ Set at Nairobi Carnival 2025', 'The crowd went CRAZY when this dropped', '/uploads/thumbnails/reel_thumb_8.jpg', '', 30, 3200000, 165000, 8900, 34000, 'My Mix - DJ Pulse', NULL, 'Music', 'published', 1, 92.4],
+                [6, 'Teaching My Grandma to DJ', 'She actually killed it!', '/uploads/thumbnails/reel_thumb_6.jpg', '', 28, 4500000, 230000, 12000, 56000, 'Comedy Mix', NULL, 'Comedy', 'published', 1, 96.1],
+                // Fit Sarah
+                [7, '100 Squats a Day for 30 Days', 'Watch my legs transform over a month', '/uploads/thumbnails/reel_thumb_6.jpg', '', 22, 890000, 46000, 2800, 12000, 'Workout Mix', NULL, 'Education', 'published', 0, 69.8],
+                [7, 'African Dance Workout - Burn 500 Calories', 'Fun workout with Afrobeat music', '/uploads/thumbnails/reel_thumb_1.jpg', '', 35, 2100000, 110000, 6700, 28000, 'Afro Dance Mix', NULL, 'Education', 'published', 1, 86.5],
+                // Travel Dave
+                [8, 'Victoria Falls from Zimbabwe Side', 'This view is UNREAL', '/uploads/thumbnails/reel_thumb_7.jpg', '', 40, 1500000, 78000, 4500, 18000, 'Nature Sounds', NULL, 'Travel', 'published', 1, 81.2],
+                [8, 'Cheapest Flight to Dubai - How I Did It', 'Travel hacking tips for Africans', '/uploads/thumbnails/reel_thumb_3.jpg', '', 30, 980000, 51000, 3200, 14000, 'Travel Vlog Sound', NULL, 'Travel', 'published', 0, 74.6],
+                // More from Zara Ke
+                [2, 'Amapiano Dance Tutorial - Beginner Friendly', 'Learn the basics in under a minute', '/uploads/thumbnails/reel_thumb_4.jpg', '', 45, 1800000, 95000, 5600, 21000, 'Amapiano Beat', NULL, 'Dance', 'published', 1, 84.9],
+                [2, 'Morning Routine as a Creator in Nairobi', 'How I start my day for maximum productivity', '/uploads/thumbnails/reel_thumb_2.jpg', '', 55, 780000, 41000, 2100, 8900, 'Chill Morning Vibes', NULL, 'Lifestyle', 'published', 0, 67.3],
+            ];
+
+            foreach ($reels as $r) {
+                Database::insert('reels', [
+                    'user_id' => $r[0],
+                    'title' => $r[1],
+                    'description' => $r[2],
+                    'thumbnail' => $r[3],
+                    'video_url' => $r[4],
+                    'duration' => $r[5],
+                    'views' => $r[6],
+                    'likes' => $r[7],
+                    'comments_count' => $r[8],
+                    'shares' => $r[9],
+                    'song_name' => $r[10],
+                    'song_url' => $r[11],
+                    'category' => $r[12],
+                    'status' => $r[13],
+                    'is_featured' => $r[14],
+                    'viral_score' => $r[15],
+                    'published_at' => $now,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-' . rand(1, 20) . ' days')),
+                    'updated_at' => $now,
+                ]);
+            }
+
+            // Seed wallet transactions for revenue data (for user 1 - admin)
+            $wallet = Database::queryOne("SELECT id FROM wallets WHERE user_id = 1 LIMIT 1");
+            if ($wallet) {
+                $wid = $wallet['id'];
+                $transactions = [
+                    ['gift_received', 5000.00, 'Gift from @zarake on reel'],
+                    ['gift_received', 3200.00, 'Gift from @djpulse on stream'],
+                    ['gift_received', 1800.00, 'Gift from @marcustech'],
+                    ['earnings', 8500.00, 'Ad revenue for June 2025'],
+                    ['earnings', 6200.00, 'Ad revenue for May 2025'],
+                    ['tip', 2100.00, 'Tip from @chefkwame on video'],
+                    ['tip', 1500.00, 'Tip from @fitsarah'],
+                    ['subscription', 4000.00, 'Subscription revenue'],
+                ];
+                foreach ($transactions as $i => $tx) {
+                    Database::insert('wallet_transactions', [
+                        'wallet_id' => $wid,
+                        'type' => $tx[0],
+                        'amount' => $tx[1],
+                        'currency' => 'KES',
+                        'status' => 'completed',
+                        'reference' => 'REV-' . strtoupper(substr(md5(uniqid()), 0, 10)),
+                        'description' => $tx[2],
+                        'created_at' => date('Y-m-d H:i:s', strtotime('-' . ($i * 2 + 1) . ' days')),
+                    ]);
+                }
+                // Update wallet balance to match total revenue
+                Database::execute("UPDATE wallets SET balance = 32300.00, updated_at = NOW() WHERE id = ?", [$wid]);
+            }
+
+            // Also add some revenue for user 2 (Zara Ke)
+            $wallet2 = Database::queryOne("SELECT id FROM wallets WHERE user_id = 2 LIMIT 1");
+            if ($wallet2) {
+                $wid = $wallet2['id'];
+                $transactions2 = [
+                    ['gift_received', 12500.00, 'Gift from fan on dance reel'],
+                    ['gift_received', 8900.00, 'Gift from @traveldave on live'],
+                    ['earnings', 15000.00, 'Video ad revenue June 2025'],
+                    ['earnings', 11200.00, 'Video ad revenue May 2025'],
+                    ['tip', 4500.00, 'Tip from @aminabeauty'],
+                    ['subscription', 6000.00, 'Subscription earnings'],
+                ];
+                foreach ($transactions2 as $i => $tx) {
+                    Database::insert('wallet_transactions', [
+                        'wallet_id' => $wid,
+                        'type' => $tx[0],
+                        'amount' => $tx[1],
+                        'currency' => 'KES',
+                        'status' => 'completed',
+                        'reference' => 'ZK-REV-' . strtoupper(substr(md5(uniqid()), 0, 10)),
+                        'description' => $tx[2],
+                        'created_at' => date('Y-m-d H:i:s', strtotime('-' . ($i * 3 + 1) . ' days')),
+                    ]);
+                }
+                Database::execute("UPDATE wallets SET balance = 78140.00, updated_at = NOW() WHERE id = ?", [$wid]);
+            }
+
+            error_log("Globiim: Videos/reels/wallet_transactions seeded successfully");
+            return true;
+        });
     }
 
     /**
