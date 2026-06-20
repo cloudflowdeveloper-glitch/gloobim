@@ -15,12 +15,39 @@ class MarketplaceController extends Controller
         $search = trim($_GET['search'] ?? '');
         $sort = $_GET['sort'] ?? 'latest';
 
-        // Try to get data from database
+        // ── Categories from marketplace_categories table ──
+        $data = [];
+        $categoriesFromDb = [];
+        try {
+            $categoriesFromDb = Database::query(
+                "SELECT mc.id, mc.name, mc.slug, mc.icon, mc.cover_url,
+                        (SELECT COUNT(*) FROM marketplace_listings ml
+                         WHERE ml.category = mc.name AND ml.status = 'active') AS live_count
+                 FROM marketplace_categories mc
+                 WHERE mc.is_active = 1
+                 ORDER BY mc.sort_order ASC"
+            );
+        } catch (\Exception $e) {}
+
+        if (!empty($categoriesFromDb)) {
+            $data['categories'] = array_map(function ($c) {
+                return [
+                    'name' => $c['name'],
+                    'icon' => $c['icon'] ?? strtolower($c['name']),
+                    'cover_url' => $c['cover_url'] ?? '/uploads/marketplace/' . ($c['icon'] ?? 'electronics') . '.jpg',
+                    'count' => (int)($c['live_count'] ?? 0),
+                ];
+            }, $categoriesFromDb);
+        }
+
+        // ── Products from database (JOIN with users) ──
         $dbProducts = [];
         try {
-            $sql = "SELECT ml.*, u.username, u.name AS seller_name, u.avatar AS seller_avatar, u.is_verified,
+            $sql = "SELECT ml.*, mc.icon AS category_icon, mc.cover_url AS category_cover,
+                    u.username, u.name AS seller_name, u.avatar AS seller_avatar, u.is_verified,
                     (SELECT COUNT(*) FROM followers WHERE following_id = ml.user_id) AS seller_followers
                     FROM marketplace_listings ml
+                    LEFT JOIN marketplace_categories mc ON ml.category = mc.name AND mc.is_active = 1
                     INNER JOIN users u ON ml.user_id = u.id
                     WHERE ml.status = 'active'";
             $params = [];
@@ -57,41 +84,29 @@ class MarketplaceController extends Controller
             $dbProducts = [];
         }
 
-        // Build view data
-        $data = [];
-
-        // Categories
-        $dbCategories = [];
-        try {
-            $dbCategories = Database::query(
-                "SELECT category, COUNT(*) AS count FROM marketplace_listings WHERE status = 'active' GROUP BY category ORDER BY count DESC"
-            );
-        } catch (\Exception $e) {}
-
-        if (!empty($dbCategories)) {
-            $catIcons = [
-                'Electronics' => 'electronics', 'Fashion' => 'fashion', 'Home' => 'home',
-                'Beauty' => 'beauty', 'Sports' => 'sports', 'Gaming' => 'gaming',
-                'Books' => 'books', 'Auto' => 'auto', 'Collectibles' => 'gaming',
-            ];
-            $data['categories'] = array_map(function ($c) use ($catIcons) {
-                return [
-                    'name' => $c['category'],
-                    'icon' => $catIcons[$c['category']] ?? 'electronics',
-                    'count' => (int)$c['count'],
-                ];
-            }, $dbCategories);
-        }
-
-        // If we have database products, convert to view format
+        // ── Map DB products to view format ──
         if (!empty($dbProducts)) {
             $baseUrl = '/uploads/marketplace/';
-            $productImages = ['product_iphone.jpg', 'product_headphones.jpg', 'product_laptop.jpg', 'product_watch.jpg', 'product_sneakers.jpg', 'product_camera.jpg', 'product_sunglasses.jpg', 'product_backpack.jpg', 'product_speaker.jpg', 'product_jacket.jpg', 'product_tablet.jpg', 'product_chair.jpg'];
-            
-            $mapProduct = function ($p, $i) use ($productImages, $baseUrl) {
-                $img = !empty($p['image_url']) && strpos($p['image_url'], 'placehold.co') === false
-                    ? $p['image_url']
-                    : $baseUrl . $productImages[$i % count($productImages)];
+            $productImages = [
+                1 => 'product_iphone.jpg', 2 => 'product_headphones.jpg', 3 => 'product_laptop.jpg',
+                4 => 'product_watch.jpg', 5 => 'product_sneakers.jpg', 6 => 'product_camera.jpg',
+                7 => 'product_sunglasses.jpg', 8 => 'product_speaker.jpg', 9 => 'product_jacket.jpg',
+                10 => 'product_tablet.jpg', 11 => 'product_chair.jpg', 12 => 'product_backpack.jpg',
+            ];
+
+            $mapProduct = function ($p) use ($productImages, $baseUrl) {
+                // Resolve image: use DB value if it's a valid local path, otherwise fallback
+                $img = $p['image_url'] ?? '';
+                if (empty($img) || strpos($img, 'placehold.co') !== false || strpos($img, 'http') === 0) {
+                    // Try category cover or fallback by product ID
+                    $id = (int)$p['id'];
+                    $img = $baseUrl . ($productImages[$id] ?? 'product_iphone.jpg');
+                }
+                // Ensure path starts with /
+                if (strpos($img, '/') !== 0) {
+                    $img = '/' . $img;
+                }
+
                 return [
                     'id' => $p['id'],
                     'title' => $p['title'],
@@ -103,10 +118,12 @@ class MarketplaceController extends Controller
                     'reviews' => (int)($p['views'] ?? rand(100, 5000)),
                     'discount' => '-' . rand(10, 30) . '%',
                     'badge' => rand(0, 3) === 0 ? ['Hot', 'New', 'Best Seller'][rand(0, 2)] : '',
+                    'category' => $p['category'] ?? '',
+                    'category_icon' => $p['category_icon'] ?? '',
                 ];
             };
 
-            $mappedProducts = array_map($mapProduct, $dbProducts, array_keys($dbProducts));
+            $mappedProducts = array_map($mapProduct, $dbProducts);
             $data['featured'] = array_slice($mappedProducts, 0, 5);
             $data['trending'] = array_slice($mappedProducts, 2, 6);
             $data['flashDeals'] = array_slice($mappedProducts, 0, 4);
@@ -114,6 +131,22 @@ class MarketplaceController extends Controller
             $data['listings'] = $dbProducts;
         } else {
             $data['listings'] = [];
+        }
+
+        // ── Deal banners (always from local uploads) ──
+        $data['dealBanners'] = [
+            ['title' => 'Flash Sale', 'subtitle' => 'Up to 50% off electronics', 'image' => '/uploads/marketplace/deal_banner_1.jpg'],
+            ['title' => 'New Arrivals', 'subtitle' => 'Fresh drops this week', 'image' => '/uploads/marketplace/deal_banner_2.jpg'],
+            ['title' => 'Bundle Deals', 'subtitle' => 'Save more when you bundle', 'image' => '/uploads/marketplace/deal_banner_3.jpg'],
+        ];
+
+        // ── Flash deal images ──
+        if (!empty($data['flashDeals'])) {
+            $flashImages = ['flash_1.jpg', 'flash_2.jpg', 'flash_3.jpg', 'flash_4.jpg'];
+            foreach ($data['flashDeals'] as $i => &$fd) {
+                $fd['flash_image'] = '/uploads/marketplace/' . $flashImages[$i % count($flashImages)];
+            }
+            unset($fd);
         }
 
         return $this->view('marketplace.index', $data);
@@ -125,9 +158,11 @@ class MarketplaceController extends Controller
 
         try {
             $listings = Database::query(
-                "SELECT ml.*, u.username, u.name AS seller_name, u.avatar AS seller_avatar, u.is_verified,
+                "SELECT ml.*, mc.icon AS category_icon, mc.cover_url AS category_cover,
+                        u.username, u.name AS seller_name, u.avatar AS seller_avatar, u.is_verified,
                         (SELECT COUNT(*) FROM followers WHERE following_id = ml.user_id) AS seller_followers
                  FROM marketplace_listings ml
+                 LEFT JOIN marketplace_categories mc ON ml.category = mc.name AND mc.is_active = 1
                  INNER JOIN users u ON ml.user_id = u.id
                  WHERE ml.id = ? AND ml.status != 'deleted'
                  LIMIT 1",
@@ -137,6 +172,22 @@ class MarketplaceController extends Controller
 
             if ($listing) {
                 Database::execute("UPDATE marketplace_listings SET views = views + 1 WHERE id = ?", [$id]);
+
+                // Ensure image URL is valid
+                $img = $listing['image_url'] ?? '';
+                if (empty($img) || strpos($img, 'placehold.co') !== false || strpos($img, 'http') === 0) {
+                    $productImages = [
+                        1 => 'product_iphone.jpg', 2 => 'product_headphones.jpg', 3 => 'product_laptop.jpg',
+                        4 => 'product_watch.jpg', 5 => 'product_sneakers.jpg', 6 => 'product_camera.jpg',
+                        7 => 'product_sunglasses.jpg', 8 => 'product_speaker.jpg', 9 => 'product_jacket.jpg',
+                        10 => 'product_tablet.jpg', 11 => 'product_chair.jpg', 12 => 'product_backpack.jpg',
+                    ];
+                    $lid = (int)$listing['id'];
+                    $listing['image_url'] = '/uploads/marketplace/' . ($productImages[$lid] ?? 'product_iphone.jpg');
+                }
+                if (strpos($listing['image_url'], '/') !== 0) {
+                    $listing['image_url'] = '/' . $listing['image_url'];
+                }
             }
         } catch (\Exception $e) {
             $listing = null;

@@ -2,16 +2,16 @@
 <?php
 $user = \Core\Auth::user();
 
-// Use fallback data
+// Use fallback data — categories now come from marketplace_categories table
 $categories = $data['categories'] ?? [
-    ['name' => 'Electronics', 'icon' => 'electronics', 'count' => 24],
-    ['name' => 'Fashion', 'icon' => 'fashion', 'count' => 18],
-    ['name' => 'Home', 'icon' => 'home', 'count' => 12],
-    ['name' => 'Beauty', 'icon' => 'beauty', 'count' => 9],
-    ['name' => 'Sports', 'icon' => 'sports', 'count' => 7],
-    ['name' => 'Gaming', 'icon' => 'gaming', 'count' => 15],
-    ['name' => 'Books', 'icon' => 'books', 'count' => 5],
-    ['name' => 'Auto', 'icon' => 'auto', 'count' => 3],
+    ['name' => 'Electronics', 'icon' => 'electronics', 'cover_url' => '/uploads/marketplace/electronics.jpg', 'count' => 24],
+    ['name' => 'Fashion', 'icon' => 'fashion', 'cover_url' => '/uploads/marketplace/fashion.jpg', 'count' => 18],
+    ['name' => 'Home', 'icon' => 'home', 'cover_url' => '/uploads/marketplace/home.jpg', 'count' => 12],
+    ['name' => 'Beauty', 'icon' => 'beauty', 'cover_url' => '/uploads/marketplace/beauty.jpg', 'count' => 9],
+    ['name' => 'Sports', 'icon' => 'sports', 'cover_url' => '/uploads/marketplace/sports.jpg', 'count' => 7],
+    ['name' => 'Gaming', 'icon' => 'gaming', 'cover_url' => '/uploads/marketplace/gaming.jpg', 'count' => 15],
+    ['name' => 'Books', 'icon' => 'books', 'cover_url' => '/uploads/marketplace/books.jpg', 'count' => 5],
+    ['name' => 'Auto', 'icon' => 'auto', 'cover_url' => '/uploads/marketplace/auto.jpg', 'count' => 3],
 ];
 
 $featured = $data['featured'] ?? [
@@ -166,7 +166,7 @@ $listings = $data['listings'] ?? [];
             <?php foreach ($categories as $cat): ?>
             <a href="/marketplace?category=<?= urlencode($cat['name']) ?>" class="mk-category-item" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; min-width: 58px;">
                 <div class="mk-category-icon">
-                    <img src="/uploads/marketplace/<?= htmlspecialchars($cat['icon'] ?? 'electronics') ?>.jpg" alt="<?= htmlspecialchars($cat['name']) ?>" style="width: 58px; height: 58px; border-radius: 50%; object-fit: cover;">
+                    <img src="<?= htmlspecialchars($cat['cover_url'] ?? '/uploads/marketplace/' . ($cat['icon'] ?? 'electronics') . '.jpg') ?>" alt="<?= htmlspecialchars($cat['name']) ?>" style="width: 58px; height: 58px; border-radius: 50%; object-fit: cover;">
                 </div>
                 <span style="color: #C1C1C3; font-size: 10px; font-weight: 500;"><?= htmlspecialchars($cat['name']) ?></span>
             </a>
