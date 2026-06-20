@@ -20,6 +20,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\InteractionController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\CurrencyController;
 
 use App\Http\Controllers\Admin\AdminGiftController;
 use App\Http\Controllers\Admin\AdminSupportController;
@@ -27,7 +29,7 @@ use App\Http\Controllers\AdminPaymentController;
 
 Router::get('/', [HomeController::class, 'index']);
 Router::get('/menu', [HomeController::class, 'menu']);
-Router::get('/notifications', [HomeController::class, 'notifications']);
+Router::get('/notifications', [NotificationController::class, 'index']);
 Router::get('/creators', [HomeController::class, 'creators']);
 
 Router::get('/login', [LoginController::class, 'showLoginForm']);
@@ -50,6 +52,12 @@ Router::get('/music/genre/{slug}', [MusicController::class, 'genre']);
 Router::get('/music/track/{id}', [MusicController::class, 'show']);
 Router::post('/music/{id}/play', [MusicController::class, 'play']);
 Router::post('/music/{id}/share', [MusicController::class, 'share']);
+
+// ===== CURRENCY ROUTES =====
+Router::get('/api/currencies', [CurrencyController::class, 'index']);
+Router::post('/api/currency/set', [CurrencyController::class, 'set']);
+Router::get('/api/currency/current', [CurrencyController::class, 'current']);
+Router::post('/api/currency/convert', [CurrencyController::class, 'convert']);
 
 // ===== SUPPORT ROUTES =====
 Router::get('/support', [SupportController::class, 'index']);
@@ -75,6 +83,10 @@ Router::middleware('auth')->group([], function () {
     Router::post('/reels/{id}/comment', [ReelController::class, 'comment']);
     Router::post('/reels/{id}/share', [ReelController::class, 'share']);
     Router::post('/reels/{id}/gift', [ReelController::class, 'sendGift']);
+    Router::get('/reels/{id}/comments', [ReelController::class, 'getComments']);
+    Router::post('/reels/{id}/reply', [ReelController::class, 'replyComment']);
+    Router::post('/comments/{id}/like', [ReelController::class, 'likeComment']);
+    Router::post('/reels/{id}/repost', [ReelController::class, 'repost']);
 
     Router::resource('videos', VideoController::class);
     Router::get('/videos/{id}', [VideoController::class, 'show']); // Override for direct match
@@ -103,6 +115,12 @@ Router::middleware('auth')->group([], function () {
     Router::post('/bookmark/{type}/{id}', [InteractionController::class, 'toggleBookmark']);
     Router::post('/tip/{type}/{id}', [InteractionController::class, 'sendTip']);
 
+    // ===== NOTIFICATION ROUTES =====
+    Router::post('/notifications/mark-read/{id}', [NotificationController::class, 'markRead']);
+    Router::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+    Router::delete('/notifications/{id}', [NotificationController::class, 'delete']);
+    Router::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+
     Router::get('/messages', [MessageController::class, 'index']);
     Router::get('/messages/search', [MessageController::class, 'searchUsers']);
     Router::get('/messages/{id}', [MessageController::class, 'show']);
@@ -110,6 +128,8 @@ Router::middleware('auth')->group([], function () {
     Router::post('/messages/{id}', [MessageController::class, 'send']);
     Router::post('/messages/{id}/send', [MessageController::class, 'send']);
     Router::post('/messages/create', [MessageController::class, 'create']);
+    Router::post('/messages/create-with-message', [MessageController::class, 'createWithMessage']);
+    Router::get('/messages/group-requests', [MessageController::class, 'groupRequests']);
 
     Router::get('/wallet', [WalletController::class, 'index']);
     Router::get('/wallet/deposit', [WalletController::class, 'depositPage']);

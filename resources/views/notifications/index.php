@@ -50,12 +50,12 @@ foreach ($notifications as $n) {
 
     <!-- Filter Chips -->
     <div class="flex gap-2 mb-5 overflow-x-auto scrollbar-hide pb-1">
-        <button class="flex-shrink-0 px-4 py-1.5 rounded-full text-white text-[10px] font-bold" style="background: linear-gradient(135deg, #6800d6, #9333ea);">All</button>
-        <button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">Likes</button>
-        <button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">Comments</button>
-        <button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">Follows</button>
-        <button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">Tips</button>
-        <button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">System</button>
+        <button onclick="filterNotifs(this, 'all')" class="notif-filter-btn flex-shrink-0 px-4 py-1.5 rounded-full text-white text-[10px] font-bold" style="background: linear-gradient(135deg, #6800d6, #9333ea);">All</button>
+        <button onclick="filterNotifs(this, 'like')" class="notif-filter-btn flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">Likes</button>
+        <button onclick="filterNotifs(this, 'comment')" class="notif-filter-btn flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">Comments</button>
+        <button onclick="filterNotifs(this, 'follow')" class="notif-filter-btn flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">Follows</button>
+        <button onclick="filterNotifs(this, 'tip')" class="notif-filter-btn flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">Tips</button>
+        <button onclick="filterNotifs(this, 'system')" class="notif-filter-btn flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors">System</button>
     </div>
 
     <?php if (!empty($notifications)): ?>
@@ -82,7 +82,7 @@ foreach ($notifications as $n) {
             elseif (($n['type'] ?? '') === 'tip') { $typeClass = 'tip'; $typeIcon = 'monetization_on'; $avatarRing = 'avatar-ring-tip'; }
             elseif (($n['type'] ?? '') === 'verified' || ($n['type'] ?? '') === 'milestone') { $typeClass = 'milestone'; $typeIcon = 'emoji_events'; }
         ?>
-        <div class="notif-card <?= $n['is_read'] ? 'read' : 'unread' ?> flex items-start gap-3 p-3 rounded-2xl cursor-pointer" onclick="openNotification(<?= $n['id'] ?>)">
+        <div class="notif-card <?= $n['is_read'] ? 'read' : 'unread' ?> flex items-start gap-3 p-3 rounded-2xl cursor-pointer" data-type="<?= $n['type'] ?? '' ?>" onclick="openNotification(<?= $n['id'] ?>)">
             <!-- Avatar with type badge -->
             <div class="relative flex-shrink-0">
                 <div class="w-11 h-11 rounded-full overflow-hidden <?= $avatarRing ?>">
@@ -112,7 +112,7 @@ foreach ($notifications as $n) {
                 <?php if (($n['type'] ?? '') === 'follow'): ?>
                 <button onclick="event.stopPropagation();followBack(<?= $n['actor_id'] ?? 0 ?>)" class="px-3 py-1 rounded-full text-white text-[9px] font-bold hover:opacity-90 transition-opacity" style="background: linear-gradient(135deg, #6800d6, #9333ea);">Follow</button>
                 <?php endif; ?>
-                <button onclick="event.stopPropagation();moreNotifOptions(<?= $n['id'] ?>)" class="p-1 rounded-full hover:bg-[#1e1e2a] transition-colors">
+                <button onclick="event.stopPropagation();moreNotifOptions(<?= $n['id'] ?>, event)" class="p-1 rounded-full hover:bg-[#1e1e2a] transition-colors">
                     <span class="material-icons-round text-zinc-600 text-base">more_vert</span>
                 </button>
             </div>
@@ -140,7 +140,7 @@ foreach ($notifications as $n) {
             elseif (($n['type'] ?? '') === 'tip') { $typeClass = 'tip'; $typeIcon = 'monetization_on'; $avatarRing = 'avatar-ring-tip'; }
             elseif (($n['type'] ?? '') === 'verified' || ($n['type'] ?? '') === 'milestone') { $typeClass = 'milestone'; $typeIcon = 'emoji_events'; }
         ?>
-        <div class="notif-card <?= $n['is_read'] ? 'read' : 'unread' ?> flex items-start gap-3 p-3 rounded-2xl cursor-pointer" onclick="openNotification(<?= $n['id'] ?>)">
+        <div class="notif-card <?= $n['is_read'] ? 'read' : 'unread' ?> flex items-start gap-3 p-3 rounded-2xl cursor-pointer" data-type="<?= $n['type'] ?? '' ?>" onclick="openNotification(<?= $n['id'] ?>)">
             <div class="relative flex-shrink-0">
                 <div class="w-11 h-11 rounded-full overflow-hidden <?= $avatarRing ?>">
                     <img src="<?= $n['actor_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover">
@@ -173,7 +173,7 @@ foreach ($notifications as $n) {
     </div>
     <div class="space-y-2 mb-6">
         <?php foreach ($earlier as $n): ?>
-        <div class="notif-card read flex items-start gap-3 p-3 rounded-2xl cursor-pointer opacity-60 hover:opacity-90 transition-opacity" onclick="openNotification(<?= $n['id'] ?>)">
+        <div class="notif-card read flex items-start gap-3 p-3 rounded-2xl cursor-pointer opacity-60 hover:opacity-90 transition-opacity" data-type="<?= $n['type'] ?? '' ?>" onclick="openNotification(<?= $n['id'] ?>)">
             <div class="relative flex-shrink-0">
                 <div class="w-11 h-11 rounded-full overflow-hidden">
                     <img src="<?= $n['actor_avatar'] ?? '/uploads/profiles/admin.jpg' ?>" alt="" class="w-full h-full object-cover opacity-70">
@@ -212,41 +212,117 @@ foreach ($notifications as $n) {
 
 <script>
 function markAllRead() {
-    document.querySelectorAll('.notif-card.unread').forEach(card => {
-        card.classList.remove('unread');
-        card.classList.add('read');
-    });
-    document.querySelectorAll('.notif-card .absolute.-top-0\\.5').forEach(dot => {
-        dot.remove();
-    });
-    const badge = document.querySelector('[style*="background: linear-gradient(135deg, #9333ea, #6d28d9)"]');
-    if (badge && badge.closest('.flex.items-center.gap-2')) badge.remove();
+    fetch('/notifications/mark-all-read', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(d => {
+        document.querySelectorAll('.notif-card.unread').forEach(card => {
+            card.classList.remove('unread');
+            card.classList.add('read');
+        });
+        document.querySelectorAll('.notif-card .absolute.-top-0\\.5').forEach(dot => dot.remove());
+        const badge = document.querySelector('[style*="background: linear-gradient(135deg, #9333ea, #6d28d9)"]');
+        if (badge && badge.closest('.flex.items-center.gap-2')) badge.remove();
+        showToast('All notifications marked as read');
+    })
+    .catch(() => showToast('Failed to mark all as read'));
 }
 
 function openNotification(id) {
     const card = event.currentTarget;
-    card.classList.remove('unread');
-    card.classList.add('read');
-    const dot = card.querySelector('.absolute.-top-0\\.5');
-    if (dot) dot.remove();
+    if (card.classList.contains('unread')) {
+        card.classList.remove('unread');
+        card.classList.add('read');
+        const dot = card.querySelector('.absolute.-top-0\\.5');
+        if (dot) dot.remove();
+        fetch('/notifications/mark-read/' + id, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
+    }
 }
 
-function moreNotifOptions(id) {
-    const actions = ['Mark as read', 'Mute', 'Delete'];
-    const choice = prompt('Choose action:\n1. Mark as read\n2. Mute\n3. Delete\n\nEnter number:');
+function moreNotifOptions(id, e) {
+    if (e) e.stopPropagation();
+    // Remove any existing menu
+    const existing = document.getElementById('notifActionMenu');
+    if (existing) existing.remove();
+
+    const btn = e ? e.currentTarget : event.currentTarget;
+    const rect = btn.getBoundingClientRect();
+
+    const menu = document.createElement('div');
+    menu.id = 'notifActionMenu';
+    menu.style.cssText = 'position:fixed;top:' + (rect.bottom + 4) + 'px;right:12px;z-index:100;background:#14141c;border:1px solid #1e1e2a;border-radius:12px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.5);min-width:160px;';
+    menu.innerHTML = `
+        <button onclick="event.stopPropagation();notifAction(${id},'read')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+            <span class="material-icons-round text-zinc-300 text-lg">done</span>
+            <span class="text-zinc-200 text-sm">Mark as read</span>
+        </button>
+        <button onclick="event.stopPropagation();notifAction(${id},'delete')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
+            <span class="material-icons-round text-red-400 text-lg">delete</span>
+            <span class="text-red-400 text-sm">Delete</span>
+        </button>`;
+    document.body.appendChild(menu);
+    setTimeout(() => document.addEventListener('click', closeNotifMenu, { once: true }), 10);
+}
+
+function closeNotifMenu() {
+    const m = document.getElementById('notifActionMenu');
+    if (m) m.remove();
+}
+
+function notifAction(id, action) {
+    closeNotifMenu();
+    if (action === 'read') {
+        fetch('/notifications/mark-read/' + id, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(() => location.reload()).catch(() => {});
+    } else if (action === 'delete') {
+        fetch('/notifications/' + id, { method: 'DELETE', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(d => { if (d.message) { showToast('Notification deleted'); location.reload(); } })
+        .catch(() => showToast('Failed to delete'));
+    }
 }
 
 function followBack(userId, e) {
     if (e) e.stopPropagation();
     const btn = e ? e.currentTarget : event.currentTarget;
     const wasText = btn.textContent;
-    btn.textContent = 'Following';
-    btn.style.background = '#14141c';
-    btn.style.border = '1px solid #1e1e2a';
-    btn.style.color = '#a1a1aa';
-    fetch('/follow/' + userId, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()).then(d => {
+    btn.textContent = '...';
+    fetch('/follow/' + userId, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(d => {
         if (d.error) { location.href = '/login'; btn.textContent = wasText; return; }
-    }).catch(() => { btn.textContent = wasText; });
+        btn.textContent = d.following ? 'Following' : 'Follow';
+        btn.style.background = d.following ? '#14141c' : 'linear-gradient(135deg, #6800d6, #9333ea)';
+        btn.style.border = d.following ? '1px solid #1e1e2a' : 'none';
+        btn.style.color = d.following ? '#a1a1aa' : 'white';
+    })
+    .catch(() => { btn.textContent = wasText; });
+}
+
+function showToast(msg) {
+    const existing = document.querySelector('.notif-toast');
+    if (existing) existing.remove();
+    const div = document.createElement('div');
+    div.className = 'notif-toast fixed top-16 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-white text-sm font-medium z-[200]';
+    div.style.cssText = 'background: linear-gradient(135deg, #6800d6, #9333ea); box-shadow: 0 4px 20px rgba(147,51,234,0.4);';
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => { div.style.opacity = '0'; div.style.transition = 'opacity 0.3s'; setTimeout(() => div.remove(), 300); }, 2000);
+}
+
+function filterNotifs(btn, type) {
+    document.querySelectorAll('.notif-filter-btn').forEach(b => {
+        b.className = 'notif-filter-btn flex-shrink-0 px-4 py-1.5 rounded-full bg-[#14141c] text-zinc-400 text-[10px] font-medium border border-[#1e1e2a] hover:bg-[#1e1e2a] hover:text-zinc-300 transition-colors';
+    });
+    btn.className = 'notif-filter-btn flex-shrink-0 px-4 py-1.5 rounded-full text-white text-[10px] font-bold';
+    btn.style.background = 'linear-gradient(135deg, #6800d6, #9333ea)';
+    btn.style.border = 'none';
+
+    document.querySelectorAll('.notif-card').forEach(card => {
+        const cardType = card.dataset.type || '';
+        if (type === 'all') { card.style.display = ''; }
+        else if (type === 'system') { card.style.display = ['verification','welcome','milestone','system'].includes(cardType) ? '' : 'none'; }
+        else { card.style.display = cardType === type ? '' : 'none'; }
+    });
 }
 </script>
 <?php $content = ob_get_clean(); ?>

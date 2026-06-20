@@ -122,7 +122,7 @@ class ReelController extends Controller
 
         return $this->view('reels.show', [
             'reel' => $reel,
-            'comments' => $this->getComments($id),
+            'comments' => $this->fetchComments($id),
             'gifts' => $this->getGifts(),
         ]);
     }
@@ -252,17 +252,106 @@ class ReelController extends Controller
         }
     }
 
-    protected function getComments($reelId): array
+    public function getComments($id): Response
+    {
+        $comments = $this->fetchComments($id);
+
+        // For each top-level comment, fetch replies
+        foreach ($comments as &$c) {
+            $c['replies'] = $this->fetchReplies($c['id']);
+        }
+        unset($c);
+
+        return $this->json($comments);
+    }
+
+    public function replyComment($id): Response
+    {
+        $user = \Core\Auth::user();
+        if (!$user) return $this->json(['error' => 'Unauthenticated'], 401);
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $body = trim($input['body'] ?? '');
+        $parentId = (int)($input['parent_id'] ?? 0);
+
+        if (empty($body)) return $this->json(['error' => 'Reply is required'], 422);
+        if ($parentId <= 0) return $this->json(['error' => 'Parent comment ID is required'], 422);
+
+        try {
+            Database::insert('comments', [
+                'user_id' => $user['id'],
+                'commentable_type' => 'reel',
+                'commentable_id' => $id,
+                'parent_id' => $parentId,
+                'body' => $body,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            Database::execute("UPDATE reels SET comments_count = COALESCE(comments_count, 0) + 1 WHERE id = ?", [$id]);
+
+            return $this->json([
+                'message' => 'Reply added',
+                'user_name' => $user['name'],
+                'user_avatar' => $user['avatar'] ?? null,
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function likeComment($commentId): Response
+    {
+        try {
+            Database::execute("UPDATE comments SET likes = COALESCE(likes, 0) + 1 WHERE id = ?", [$commentId]);
+            $row = Database::queryOne("SELECT likes FROM comments WHERE id = ?", [$commentId]);
+            return $this->json(['likes' => (int)($row['likes'] ?? 0)]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function repost($id): Response
+    {
+        $user = \Core\Auth::user();
+        if (!$user) return $this->json(['error' => 'Unauthenticated'], 401);
+
+        try {
+            Database::execute("UPDATE reels SET shares = COALESCE(shares, 0) + 1 WHERE id = ?", [$id]);
+            $row = Database::queryOne("SELECT shares FROM reels WHERE id = ?", [$id]);
+            return $this->json(['message' => 'Reposted', 'shares' => (int)($row['shares'] ?? 0)]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    protected function fetchComments($reelId): array
     {
         try {
             return Database::query(
                 "SELECT c.*, u.username, u.name AS commenter_name, u.avatar AS commenter_avatar
                  FROM comments c
                  INNER JOIN users u ON c.user_id = u.id
-                 WHERE c.commentable_type = 'reel' AND c.commentable_id = ?
-                 ORDER BY c.created_at DESC
-                 LIMIT 20",
+                 WHERE c.commentable_type = 'reel' AND c.commentable_id = ? AND (c.parent_id IS NULL OR c.parent_id = 0)
+                 ORDER BY c.likes DESC, c.created_at DESC
+                 LIMIT 30",
                 [$reelId]
+            );
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    protected function fetchReplies($parentId): array
+    {
+        try {
+            return Database::query(
+                "SELECT c.*, u.username, u.name AS commenter_name, u.avatar AS commenter_avatar
+                 FROM comments c
+                 INNER JOIN users u ON c.user_id = u.id
+                 WHERE c.parent_id = ?
+                 ORDER BY c.created_at ASC
+                 LIMIT 10",
+                [$parentId]
             );
         } catch (\Exception $e) {
             return [];

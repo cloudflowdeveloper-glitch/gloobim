@@ -185,6 +185,77 @@ class MessageController extends Controller
         }
     }
 
+    public function createWithMessage(): Response
+    {
+        $user = \Core\Auth::user();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthenticated'], 401);
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $userId = (int)($input['user_id'] ?? 0);
+        $body = trim($input['body'] ?? '');
+
+        if ($userId === (int)$user['id']) {
+            return $this->json(['error' => 'Cannot message yourself'], 422);
+        }
+
+        if (!$userId) {
+            return $this->json(['error' => 'User ID is required'], 422);
+        }
+
+        if (empty($body)) {
+            return $this->json(['error' => 'Message is required'], 422);
+        }
+
+        try {
+            // Check if conversation exists
+            $existing = Database::query(
+                "SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?) LIMIT 1",
+                [$user['id'], $userId, $userId, $user['id']]
+            );
+
+            $conversationId;
+            if (!empty($existing)) {
+                $conversationId = (int)$existing[0]['id'];
+            } else {
+                $conversationId = Database::insert('conversations', [
+                    'user_one' => $user['id'],
+                    'user_two' => $userId,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+
+            // Send the first message
+            Database::insert('messages', [
+                'conversation_id' => $conversationId,
+                'sender_id' => $user['id'],
+                'body' => $body,
+                'is_read' => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            Database::execute(
+                "UPDATE conversations SET last_message_at = NOW() WHERE id = ?",
+                [$conversationId]
+            );
+
+            return $this->json([
+                'message' => 'Message sent',
+                'conversation_id' => $conversationId,
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function groupRequests(): Response
+    {
+        // Groups feature coming soon - return empty for now
+        return $this->json(['requests' => [], 'groups' => []]);
+    }
+
     public function searchUsers(): Response
     {
         $user = \Core\Auth::user();

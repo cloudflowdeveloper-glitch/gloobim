@@ -514,6 +514,61 @@ class App
             error_log("Globiim: Videos/reels/wallet_transactions seeded successfully");
             return true;
         });
+
+        // Migration: Add actor_id and link_url columns to notifications table
+        static::runMigration('add_notification_actor_id', function () {
+            // Add actor_id column if it doesn't exist
+            try {
+                Database::execute("ALTER TABLE notifications ADD COLUMN actor_id BIGINT UNSIGNED NULL AFTER user_id");
+            } catch (\Exception $e) {
+                // Column may already exist, ignore
+            }
+
+            // Add link_url column if it doesn't exist
+            try {
+                Database::execute("ALTER TABLE notifications ADD COLUMN link_url VARCHAR(500) NULL AFTER data");
+            } catch (\Exception $e) {
+                // Column may already exist, ignore
+            }
+
+            // Backfill actor_id from JSON data column
+            $rows = Database::query("SELECT id, data FROM notifications WHERE actor_id IS NULL");
+            foreach ($rows as $row) {
+                $actorId = null;
+                $data = $row['data'] ?? null;
+                if ($data) {
+                    $parsed = json_decode($data, true);
+                    if (is_array($parsed)) {
+                        $actorId = $parsed['follower_id'] ?? $parsed['from_user_id'] ?? $parsed['actor_id'] ?? null;
+                    }
+                }
+                if ($actorId) {
+                    Database::execute("UPDATE notifications SET actor_id = ? WHERE id = ?", [(int)$actorId, (int)$row['id']]);
+                }
+            }
+
+            error_log("Globiim: add_notification_actor_id migration completed");
+            return true;
+        });
+
+        // Migration: Fix currency symbols that were corrupted
+        static::runMigration('fix_currency_symbols', function () {
+            $fixes = [
+                'EU' => '€',
+                'GB' => '£',
+                'GH' => 'GH₵',
+                'IN' => '₹',
+                'NG' => '₦',
+            ];
+            foreach ($fixes as $code => $symbol) {
+                Database::execute(
+                    "UPDATE country_currencies SET currency_symbol = ? WHERE country_code = ?",
+                    [$symbol, $code]
+                );
+            }
+            error_log("Globiim: fix_currency_symbols migration completed");
+            return true;
+        });
     }
 
     /**

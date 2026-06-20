@@ -351,12 +351,37 @@
                 <p class="text-zinc-600 text-xs mt-1">Try a different name or username</p>
             </div>
         </div>
+
+        <!-- Compose Area (shown after user is selected) -->
+        <div id="nmComposeArea" class="hidden px-4 pb-4 flex-shrink-0" style="border-top: 1px solid rgba(255,255,255,0.04);">
+            <div class="flex items-center gap-3 pt-3 mb-2">
+                <div id="nmSelectedAvatar" class="w-10 h-10 rounded-full overflow-hidden bg-[#1e1e2a] flex-shrink-0">
+                    <img src="/uploads/profiles/admin.jpg" alt="" class="w-full h-full object-cover">
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p id="nmSelectedName" class="text-white text-sm font-semibold truncate">User</p>
+                    <p class="text-zinc-500 text-[10px]">Type a message below</p>
+                </div>
+                <button onclick="cancelNmCompose()" class="p-1 rounded-full hover:bg-[#1e1e2a] transition-colors">
+                    <span class="material-icons-round text-zinc-400 text-lg">close</span>
+                </button>
+            </div>
+            <div class="relative">
+                <input type="text" id="nmMessageInput" placeholder="Write a message..." 
+                    class="w-full bg-[#14141c] text-white pl-4 pr-24 py-3 rounded-2xl border border-[#1e1e2a] focus:border-[#834ae5] focus:outline-none text-sm placeholder:text-zinc-600 transition-all"
+                    onkeydown="if(event.key==='Enter')sendNewMessage()">
+                <button onclick="sendNewMessage()" id="nmSendBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold hover:opacity-90 transition-opacity" style="background: linear-gradient(135deg, #834ae5, #6b21a8);">
+                    Send
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
 let nmSearchTimer = null;
 let nmCreatingConversation = false;
+let nmSelectedUserId = null;
 
 // ===== Open / Close Modal =====
 function openNewMessage() {
@@ -378,6 +403,10 @@ function closeNewMessage() {
     document.getElementById('nmInitialState').classList.remove('hidden');
     document.getElementById('nmNoResults').classList.add('hidden');
     document.getElementById('nmLoading').classList.add('hidden');
+    // Reset compose area
+    nmSelectedUserId = null;
+    document.getElementById('nmComposeArea').classList.add('hidden');
+    document.getElementById('nmMessageInput').value = '';
 }
 
 function closeNewMessageOutside(e) {
@@ -484,19 +513,60 @@ function escHTML(str) {
     return div.innerHTML;
 }
 
-// ===== Start Chat =====
+// ===== Start Chat (show compose area) =====
 function startChatWithUser(userId) {
-    if (nmCreatingConversation) return;
-    nmCreatingConversation = true;
-
-    // Show a quick loading state on the clicked item
+    // Find the clicked user's info from the DOM
     const items = document.querySelectorAll('.nm-user-item');
-    items.forEach(item => { item.style.pointerEvents = 'none'; item.style.opacity = '0.5'; });
+    let userName = 'User';
+    let userAvatar = '/uploads/profiles/admin.jpg';
+    
+    items.forEach(item => {
+        if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(userId)) {
+            const nameEl = item.querySelector('.text-sm.font-semibold');
+            const avatarEl = item.querySelector('img');
+            if (nameEl) userName = nameEl.textContent;
+            if (avatarEl) userAvatar = avatarEl.src;
+        }
+    });
+    
+    nmSelectedUserId = userId;
+    document.getElementById('nmSelectedName').textContent = userName;
+    document.getElementById('nmSelectedAvatar').querySelector('img').src = userAvatar;
+    document.getElementById('nmResults').classList.add('hidden');
+    document.getElementById('nmInitialState').classList.add('hidden');
+    document.getElementById('nmSearchInput').value = '';
+    document.getElementById('nmClearBtn').classList.add('hidden');
+    document.getElementById('nmComposeArea').classList.remove('hidden');
+    document.getElementById('nmMessageInput').focus();
+    
+    // Update panel title
+    const panelTitle = document.querySelector('.nm-panel h2');
+    if (panelTitle) panelTitle.textContent = 'New Message';
+}
 
-    fetch('/messages/create', {
+function cancelNmCompose() {
+    nmSelectedUserId = null;
+    document.getElementById('nmComposeArea').classList.add('hidden');
+    document.getElementById('nmMessageInput').value = '';
+    document.getElementById('nmInitialState').classList.remove('hidden');
+    const panelTitle = document.querySelector('.nm-panel h2');
+    if (panelTitle) panelTitle.textContent = 'New Message';
+}
+
+function sendNewMessage() {
+    const input = document.getElementById('nmMessageInput');
+    const msg = input.value.trim();
+    if (!msg || !nmSelectedUserId) return;
+    
+    const sendBtn = document.getElementById('nmSendBtn');
+    sendBtn.textContent = 'Sending...';
+    sendBtn.style.opacity = '0.7';
+    sendBtn.style.pointerEvents = 'none';
+    
+    fetch('/messages/create-with-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body: JSON.stringify({ user_id: userId })
+        body: JSON.stringify({ user_id: nmSelectedUserId, body: msg })
     })
     .then(r => r.json())
     .then(data => {
@@ -504,14 +574,16 @@ function startChatWithUser(userId) {
             window.location.href = '/messages/' + data.conversation_id;
         } else if (data.error) {
             showToast(data.error);
-            nmCreatingConversation = false;
-            items.forEach(item => { item.style.pointerEvents = ''; item.style.opacity = '1'; });
+            sendBtn.textContent = 'Send';
+            sendBtn.style.opacity = '1';
+            sendBtn.style.pointerEvents = '';
         }
     })
     .catch(() => {
-        showToast('Could not start conversation');
-        nmCreatingConversation = false;
-        items.forEach(item => { item.style.pointerEvents = ''; item.style.opacity = '1'; });
+        showToast('Could not send message');
+        sendBtn.textContent = 'Send';
+        sendBtn.style.opacity = '1';
+        sendBtn.style.pointerEvents = '';
     });
 }
 
@@ -610,17 +682,55 @@ function switchTab(btn, tab) {
     btn.classList.add('active');
 
     const items = document.querySelectorAll('.conv-item');
-    items.forEach(item => {
-        if (tab === 'all') {
-            item.style.display = '';
-        } else if (tab === 'unread') {
-            item.style.display = item.dataset.unread === '1' ? '' : 'none';
-        } else if (tab === 'groups') {
-            item.style.display = 'none';
-        } else if (tab === 'requests') {
-            item.style.display = 'none';
-        }
-    });
+    
+    if (tab === 'all') {
+        items.forEach(item => { item.style.display = ''; });
+        document.getElementById('groupRequestsArea')?.classList.add('hidden');
+    } else if (tab === 'unread') {
+        items.forEach(item => { item.style.display = item.dataset.unread === '1' ? '' : 'none'; });
+        document.getElementById('groupRequestsArea')?.classList.add('hidden');
+    } else if (tab === 'groups') {
+        items.forEach(item => { item.style.display = 'none'; });
+        showGroupRequests('groups');
+    } else if (tab === 'requests') {
+        items.forEach(item => { item.style.display = 'none'; });
+        showGroupRequests('requests');
+    }
+}
+
+function showGroupRequests(type) {
+    let area = document.getElementById('groupRequestsArea');
+    if (!area) {
+        area = document.createElement('div');
+        area.id = 'groupRequestsArea';
+        area.className = 'flex-1 flex items-center justify-center px-6';
+        document.getElementById('conversationList').appendChild(area);
+    }
+    area.classList.remove('hidden');
+    
+    if (type === 'groups') {
+        area.innerHTML = `
+            <div class="text-center">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgba(131,74,229,0.15), rgba(20,20,28,0.9));">
+                    <span class="material-icons-round text-[#834ae5] text-4xl">group</span>
+                </div>
+                <h3 class="text-white font-bold text-base mb-1">No group chats yet</h3>
+                <p class="text-zinc-500 text-xs mb-5">Create a group chat with multiple friends</p>
+                <button onclick="showToast('Group chats coming soon!')" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-opacity" style="background: linear-gradient(135deg, #834ae5, #6b21a8); box-shadow: 0 4px 15px rgba(131,74,229,0.4);">
+                    <span class="material-icons-round text-lg">group_add</span>
+                    Create Group
+                </button>
+            </div>`;
+    } else {
+        area.innerHTML = `
+            <div class="text-center">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgba(131,74,229,0.15), rgba(20,20,28,0.9));">
+                    <span class="material-icons-round text-[#834ae5] text-4xl">mail_outline</span>
+                </div>
+                <h3 class="text-white font-bold text-base mb-1">No message requests</h3>
+                <p class="text-zinc-500 text-xs">When people message you who you don't follow, their requests will appear here</p>
+            </div>`;
+    }
 }
 
 function filterConversations(query) {

@@ -299,37 +299,29 @@
     <!-- ===== COMMENTS PANEL ===== -->
     <div id="commentsPanel" class="hidden fixed bottom-0 left-0 right-0 z-[35] bg-black/90 backdrop-blur-xl rounded-t-2xl border-t border-white/10 max-h-[55%] flex flex-col slide-up">
         <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
-            <span class="text-white text-sm font-bold"><?= formatCount($reel['comments_count'] ?? 0) ?> Comments</span>
+            <span class="text-white text-sm font-bold" id="commentsCount">0 Comments</span>
             <button onclick="closeComments()" class="p-1 rounded-full hover:bg-white/10 transition-colors">
                 <span class="material-icons-round text-zinc-400 text-xl">close</span>
             </button>
         </div>
         <div class="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-hide" id="commentsScroll">
-            <?php for ($i = 0; $i < 6; $i++):
-                $commenters = ['Aisha Rahman', 'DJ Khalid', 'TechBro', 'LaughKing', 'Mercy Mwangi', 'Steve 254'];
-                $texts = ['This is 🔥🔥🔥', 'No way!! 😂', 'Tutorial please 👏', 'First! 💪', 'Can\'t stop watching 🔄', 'Top quality 💯'];
-                $colors = ['#6d28d9', '#e82c3d', '#2563eb', '#f59e0b', '#ec4899', '#10b981'];
-            ?>
-            <div class="flex gap-2.5">
-                <img src="/uploads/profiles/admin.jpg" class="w-8 h-8 rounded-full flex-shrink-0">
-                <div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-white text-xs font-semibold"><?= $commenters[$i] ?></span>
-                        <span class="text-zinc-600 text-[10px]"><?= $i + 1 ?>h</span>
-                    </div>
-                    <p class="text-zinc-200 text-[13px]"><?= $texts[$i] ?></p>
-                    <div class="flex items-center gap-3 mt-0.5">
-                        <button class="text-zinc-600 text-[10px] font-medium hover:text-zinc-400">Reply</button>
-                        <button class="flex items-center gap-0.5 text-zinc-600 text-[10px] hover:text-zinc-400"><span class="material-icons-round text-[10px]">favorite_border</span> <?= rand(5, 200) ?></button>
-                    </div>
-                </div>
+            <!-- Comments loaded dynamically -->
+            <div id="commentsLoading" class="flex items-center justify-center py-8">
+                <div class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full" style="animation: spin 0.8s linear infinite;"></div>
             </div>
-            <?php endfor; ?>
         </div>
-        <div class="px-4 py-2.5 border-t border-white/10 flex items-center gap-2">
+        <div class="px-4 py-2.5 border-t border-white/10 flex items-center gap-2" id="commentInputArea">
             <img src="/uploads/profiles/admin.jpg" class="w-7 h-7 rounded-full flex-shrink-0">
-            <input type="text" id="commentInput" placeholder="Add a comment..." class="chat-input flex-1 bg-white/10 text-white px-3 py-2 rounded-full text-[12px] placeholder:text-zinc-500 border border-white/10" onkeydown="if(event.key==='Enter')sendComment()">
+            <input type="text" id="commentInput" placeholder="Add a comment..." class="chat-input flex-1 bg-white/10 text-white px-3 py-2 rounded-full text-[12px] placeholder:text-zinc-500 border border-white/10" onkeydown="if(event.key==='Enter'){event.preventDefault();sendComment()}">
             <button onclick="sendComment()" class="text-[12px] font-bold text-blue-400 flex-shrink-0">Post</button>
+        </div>
+        <!-- Reply bar (shown when replying) -->
+        <div id="replyBar" class="hidden px-4 py-2 border-t border-white/10 flex items-center gap-2" style="background: rgba(131,74,229,0.1); border-top: 1px solid rgba(131,74,229,0.2);">
+            <span class="material-icons-round text-[#834ae5] text-sm">reply</span>
+            <span id="replyingToName" class="text-zinc-300 text-xs flex-1 truncate">Replying to...</span>
+            <button onclick="cancelReply()" class="p-1 rounded-full hover:bg-white/10 transition-colors">
+                <span class="material-icons-round text-zinc-400 text-sm">close</span>
+            </button>
         </div>
     </div>
 
@@ -466,16 +458,19 @@ function switchTab(btn, tab) {
 function toggleLike(btn) {
     const icon = btn.querySelector('.like-icon');
     const countEl = btn.querySelector('.like-count');
-    if (icon.textContent === 'favorite_border') {
+    const isLiking = icon.textContent === 'favorite_border';
+
+    if (isLiking) {
         icon.textContent = 'favorite'; icon.style.color = '#ef4444';
         let c = parseInt(countEl.textContent.replace(/[^0-9]/g, '')) || 0;
         countEl.textContent = formatCount(c + 1);
-        fetch('/reels/' + clipItems[currentReel].dataset.reelId + '/like', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
     } else {
         icon.textContent = 'favorite_border'; icon.style.color = '#ffffff';
         let c = parseInt(countEl.textContent.replace(/[^0-9]/g, '')) || 0;
         countEl.textContent = formatCount(Math.max(0, c - 1));
     }
+
+    fetch('/reels/' + clipItems[currentReel].dataset.reelId + '/like', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
 }
 
 function toggleFollowBadge(btn) {
@@ -518,9 +513,13 @@ function toggleFollowBtn(btn, userId) {
 
 function repostClip(id, btn) {
     const countEl = btn.querySelector('.repost-count');
-    let c = parseInt(countEl.textContent.replace(/[^0-9]/g, '')) || 0;
-    countEl.textContent = formatCount(c + 1);
-    showToast('Reposted! 🔄');
+    fetch('/reels/' + id + '/repost', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(d => {
+        if (d.shares !== undefined) countEl.textContent = formatCount(d.shares);
+        showToast('Reposted! 🔄');
+    })
+    .catch(() => showToast('Reposted! 🔄'));
 }
 
 function doubleTapLike(event, index) {
@@ -548,17 +547,175 @@ function closeSearch() { document.getElementById('searchPanel').classList.add('h
 function searchClips() { const q = document.getElementById('clipSearchInput').value.trim(); if (q) showToast('Searching: ' + q); closeSearch(); }
 function searchClipsFor(term) { document.getElementById('clipSearchInput').value = term; showToast('Searching: ' + term); closeSearch(); }
 
-function openComments(id) { document.getElementById('commentsPanel').classList.remove('hidden'); }
-function closeComments() { document.getElementById('commentsPanel').classList.add('hidden'); }
+let currentCommentReelId = null;
+let replyingTo = null;
+let replyingToCommentId = null;
+
+function openComments(id) {
+    currentCommentReelId = id;
+    document.getElementById('commentsPanel').classList.remove('hidden');
+    document.getElementById('commentsLoading').classList.remove('hidden');
+
+    // Fetch comments from API
+    fetch('/reels/' + id + '/comments')
+        .then(r => r.json())
+        .then(comments => {
+            document.getElementById('commentsLoading').classList.add('hidden');
+            renderComments(comments);
+        })
+        .catch(() => {
+            document.getElementById('commentsLoading').classList.add('hidden');
+            document.getElementById('commentsScroll').innerHTML = '<p class="text-zinc-500 text-center text-xs py-4">Could not load comments</p>';
+        });
+}
+
+function closeComments() { document.getElementById('commentsPanel').classList.add('hidden'); cancelReply(); }
+
+function renderComments(comments) {
+    const scroll = document.getElementById('commentsScroll');
+    if (!comments || comments.length === 0) {
+        scroll.innerHTML = '<p class="text-zinc-500 text-center text-xs py-4">No comments yet. Be the first!</p>';
+        document.getElementById('commentsCount').textContent = '0 Comments';
+        return;
+    }
+
+    document.getElementById('commentsCount').textContent = comments.length + ' Comments';
+    let html = '';
+
+    comments.forEach(c => {
+        const avatar = c.commenter_avatar || '/uploads/profiles/admin.jpg';
+        const name = escapeHtml(c.commenter_name || 'User');
+        const body = escapeHtml(c.body);
+        const likes = parseInt(c.likes) || 0;
+        const time = timeAgo(c.created_at);
+
+        html += `<div class="comment-item flex gap-2.5" data-comment-id="${c.id}">
+            <img src="${avatar}" class="w-8 h-8 rounded-full flex-shrink-0">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-white text-xs font-semibold">${name}</span>
+                    <span class="text-zinc-600 text-[10px]">${time}</span>
+                </div>
+                <p class="text-zinc-200 text-[13px] mt-0.5">${body}</p>
+                <div class="flex items-center gap-3 mt-1">
+                    <button onclick="event.stopPropagation(); startReply(${c.id}, '${name.replace(/'/g, "\\'")}')" class="text-zinc-600 text-[10px] font-medium hover:text-zinc-400 transition-colors">Reply</button>
+                    <button onclick="event.stopPropagation(); likeComment(${c.id}, this)" class="flex items-center gap-0.5 text-zinc-600 text-[10px] hover:text-zinc-400 transition-colors">
+                        <span class="material-icons-round" style="font-size: 10px;">favorite_border</span>
+                        <span class="comment-like-count">${likes > 0 ? likes : ''}</span>
+                    </button>
+                </div>`;
+
+        // Render replies
+        if (c.replies && c.replies.length > 0) {
+            html += '<div class="mt-2 ml-2 space-y-2" style="border-left: 2px solid rgba(131,74,229,0.2); padding-left: 10px;">';
+            c.replies.forEach(r => {
+                const rAvatar = r.commenter_avatar || '/uploads/profiles/admin.jpg';
+                const rName = escapeHtml(r.commenter_name || 'User');
+                const rBody = escapeHtml(r.body);
+                const rLikes = parseInt(r.likes) || 0;
+                const rTime = timeAgo(r.created_at);
+                html += `<div class="flex gap-2">
+                    <img src="${rAvatar}" class="w-6 h-6 rounded-full flex-shrink-0">
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-white text-[11px] font-semibold">${rName}</span>
+                            <span class="text-zinc-600 text-[9px]">${rTime}</span>
+                        </div>
+                        <p class="text-zinc-300 text-[12px]">${rBody}</p>
+                        <div class="flex items-center gap-3 mt-0.5">
+                            <button onclick="event.stopPropagation(); likeComment(${r.id}, this)" class="flex items-center gap-0.5 text-zinc-600 text-[9px] hover:text-zinc-400">
+                                <span class="material-icons-round" style="font-size: 9px;">favorite_border</span>
+                                <span class="comment-like-count">${rLikes > 0 ? rLikes : ''}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+        }
+
+        html += '</div></div>';
+    });
+
+    scroll.innerHTML = html;
+}
+
 function sendComment() {
     const input = document.getElementById('commentInput');
-    const msg = input.value.trim(); if (!msg) return;
-    const scroll = document.getElementById('commentsScroll');
-    const row = document.createElement('div');
-    row.className = 'flex gap-2.5 fade-in';
-    row.innerHTML = '<img src="/uploads/profiles/admin.jpg" class="w-8 h-8 rounded-full flex-shrink-0"><div><span class="text-white text-xs font-semibold">You</span><p class="text-zinc-200 text-[13px]">' + escapeHtml(msg) + '</p><div class="flex items-center gap-3 mt-0.5"><span class="text-zinc-600 text-[10px]">Just now</span></div></div>';
-    scroll.appendChild(row); scroll.scrollTop = scroll.scrollHeight;
-    input.value = '';
+    const msg = input.value.trim();
+    if (!msg || !currentCommentReelId) return;
+
+    const url = replyingTo
+        ? '/reels/' + currentCommentReelId + '/reply'
+        : '/reels/' + currentCommentReelId + '/comment';
+
+    const body = replyingTo
+        ? { body: msg, parent_id: replyingToCommentId }
+        : { body: msg };
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify(body)
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.error) { showToast(d.error); return; }
+        input.value = '';
+        cancelReply();
+        showToast(d.message || 'Comment posted!');
+        // Reload comments
+        openComments(currentCommentReelId);
+    })
+    .catch(() => showToast('Failed to post comment'));
+}
+
+function startReply(commentId, name) {
+    replyingTo = name;
+    replyingToCommentId = commentId;
+    document.getElementById('replyBar').classList.remove('hidden');
+    document.getElementById('replyingToName').textContent = 'Replying to ' + name;
+    document.getElementById('commentInput').focus();
+    document.getElementById('commentInput').placeholder = 'Write a reply...';
+}
+
+function cancelReply() {
+    replyingTo = null;
+    replyingToCommentId = null;
+    document.getElementById('replyBar').classList.add('hidden');
+    document.getElementById('commentInput').placeholder = 'Add a comment...';
+}
+
+function likeComment(commentId, btn) {
+    const icon = btn.querySelector('.material-icons-round');
+    const countEl = btn.querySelector('.comment-like-count');
+    let count = parseInt(countEl.textContent) || 0;
+
+    if (icon.textContent === 'favorite_border') {
+        icon.textContent = 'favorite';
+        icon.style.color = '#ef4444';
+        count++;
+    } else {
+        icon.textContent = 'favorite_border';
+        icon.style.color = '';
+        count--;
+    }
+    countEl.textContent = count > 0 ? count : '';
+
+    fetch('/comments/' + commentId + '/like', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
+}
+
+function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const now = new Date();
+    const date = new Date(dateStr.replace(/-/g, '/'));
+    const diff = Math.floor((now - date) / 1000);
+    if (diff < 60) return 'now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd';
+    if (diff < 2592000) return Math.floor(diff / 604800) + 'w';
+    return Math.floor(diff / 2592000) + 'mo';
 }
 
 function shareClip(id) {
