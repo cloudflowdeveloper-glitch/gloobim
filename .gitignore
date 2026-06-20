@@ -2,8 +2,8 @@
 /vendor/
 node_modules
 
-# uploads (large binary files)
-/public/uploads/
+# uploads - audio files only (large)
+/public/uploads/music/audio/
 
 # misc
 .DS_Store
