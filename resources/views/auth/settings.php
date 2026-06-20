@@ -86,6 +86,10 @@ $profileTypes = [
                     <?= $initials ?: 'U' ?>
                 </div>
                 <?php endif; ?>
+                <label class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center cursor-pointer hover:bg-brand-500 transition-colors border-2 border-[#1a1a2e] shadow-lg" title="Change avatar">
+                    <span class="material-icons-round text-white text-sm">camera_alt</span>
+                    <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadAvatar(this)">
+                </label>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5">
@@ -494,6 +498,19 @@ function switchProfileType(type) {
     }).then(function(r) { return r.json(); }).then(function(data) {
         console.log('Profile type updated:', data);
     });
+}
+
+function uploadAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const fd = new FormData();
+    fd.append('avatar', input.files[0]);
+    fetch('/profile/upload-avatar', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(d => {
+            if (d.error) { alert(d.error); return; }
+            location.reload();
+        })
+        .catch(() => alert('Upload failed'));
 }
 </script>
 

@@ -129,6 +129,7 @@ Router::middleware('auth')->group([], function () {
     Router::get('/settings', [CreatorController::class, 'settings']);
     Router::post('/profile/update', [CreatorController::class, 'updateProfile']);
     Router::post('/profile/update-type', [CreatorController::class, 'updateProfileType']);
+    Router::post('/profile/upload-avatar', [CreatorController::class, 'uploadAvatar']);
 
     // ===== USER SEARCH =====
     Router::get('/users/search', [LivestreamController::class, 'searchUsers']);

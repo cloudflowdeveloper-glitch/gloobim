@@ -598,21 +598,85 @@ class MarketplaceController extends Controller
             'color' => 'purple',
         ];
 
-        // Digital products categories — also try to pull from DB if marketplace_listings have digital types
-        $digitalCategories = [
-            ['name' => 'E-books', 'icon' => 'auto_stories', 'subtitle' => 'Read anywhere, anytime', 'count' => '5,120', 'color' => 'blue'],
-            ['name' => 'Courses', 'icon' => 'school', 'subtitle' => 'Learn from the best', 'count' => '3,432', 'color' => 'blue'],
-            ['name' => 'Templates', 'icon' => 'description', 'subtitle' => 'Ready-to-use designs', 'count' => '2,231', 'color' => 'blue'],
-            ['name' => 'Presets & Tools', 'icon' => 'tune', 'subtitle' => 'Enhance your workflow', 'count' => '1,431', 'color' => 'blue'],
+        // ── Digital products categories (type = 'digital' from market_items) ──
+        $digitalMeta = [
+            'E-books'        => ['icon' => 'auto_stories', 'subtitle' => 'Read anywhere, anytime'],
+            'Courses'        => ['icon' => 'school',      'subtitle' => 'Learn from the best'],
+            'Templates'      => ['icon' => 'description',  'subtitle' => 'Ready-to-use designs'],
+            'Presets & Tools' => ['icon' => 'tune',         'subtitle' => 'Enhance your workflow'],
         ];
 
-        // Creator & Brand categories
-        $creatorCategories = [
-            ['name' => 'Creator Services', 'icon' => 'handshake', 'subtitle' => 'Content, editing, management', 'count' => '2,120', 'color' => 'green'],
-            ['name' => 'Brand Campaigns', 'icon' => 'campaign', 'subtitle' => 'Sponsorships, partnerships', 'count' => '1,540', 'color' => 'green'],
-            ['name' => 'Affiliate Programs', 'icon' => 'local_offer', 'subtitle' => 'Earn with your audience', 'count' => '980', 'color' => 'green'],
-            ['name' => 'Influencer Plans', 'icon' => 'star', 'subtitle' => 'Grow your reach', 'count' => '1,250', 'color' => 'green'],
+        $digitalCategories = [];
+        try {
+            $digitalRows = Database::query(
+                "SELECT category, COUNT(*) AS cnt
+                 FROM market_items
+                 WHERE type = 'digital' AND status = 'active'
+                 GROUP BY category
+                 ORDER BY cnt DESC"
+            );
+            foreach ($digitalRows as $row) {
+                $name = $row['category'];
+                $meta = $digitalMeta[$name] ?? ['icon' => 'folder', 'subtitle' => 'Digital products'];
+                $digitalCategories[] = [
+                    'name'     => $name,
+                    'icon'     => $meta['icon'],
+                    'subtitle' => $meta['subtitle'],
+                    'count'    => number_format((int)$row['cnt']),
+                    'color'    => 'blue',
+                ];
+            }
+        } catch (\Exception $e) {}
+
+        // Fallback if DB returned nothing
+        if (empty($digitalCategories)) {
+            $digitalCategories = [
+                ['name' => 'E-books',        'icon' => 'auto_stories', 'subtitle' => 'Read anywhere, anytime', 'count' => '5,120', 'color' => 'blue'],
+                ['name' => 'Courses',        'icon' => 'school',      'subtitle' => 'Learn from the best',     'count' => '3,432', 'color' => 'blue'],
+                ['name' => 'Templates',      'icon' => 'description',  'subtitle' => 'Ready-to-use designs',   'count' => '2,231', 'color' => 'blue'],
+                ['name' => 'Presets & Tools', 'icon' => 'tune',         'subtitle' => 'Enhance your workflow',  'count' => '1,431', 'color' => 'blue'],
+            ];
+        }
+
+        // ── Creator & Brand categories (type = 'service' from market_items) ──
+        $creatorMeta = [
+            'Creator Services'   => ['icon' => 'handshake',    'subtitle' => 'Content, editing, management'],
+            'Brand Campaigns'    => ['icon' => 'campaign',     'subtitle' => 'Sponsorships, partnerships'],
+            'Affiliate Programs' => ['icon' => 'local_offer',  'subtitle' => 'Earn with your audience'],
+            'Influencer Plans'   => ['icon' => 'star',         'subtitle' => 'Grow your reach'],
         ];
+
+        $creatorCategories = [];
+        try {
+            $creatorRows = Database::query(
+                "SELECT category, COUNT(*) AS cnt
+                 FROM market_items
+                 WHERE type = 'service' AND status = 'active'
+                 GROUP BY category
+                 ORDER BY cnt DESC"
+            );
+            foreach ($creatorRows as $row) {
+                $name = $row['category'];
+                $meta = $creatorMeta[$name] ?? ['icon' => 'person', 'subtitle' => 'Creator & brand services'];
+                $creatorCategories[] = [
+                    'name'     => $name,
+                    'icon'     => $meta['icon'],
+                    'subtitle' => $meta['subtitle'],
+                    'count'    => number_format((int)$row['cnt']),
+                    'color'    => 'green',
+                ];
+            }
+        } catch (\Exception $e) {}
+
+        // Fallback if DB returned nothing
+        if (empty($creatorCategories)) {
+            $creatorCategories = [
+                ['name' => 'Creator Services',   'icon' => 'handshake',   'subtitle' => 'Content, editing, management', 'count' => '2,120', 'color' => 'green'],
+                ['name' => 'Brand Campaigns',    'icon' => 'campaign',    'subtitle' => 'Sponsorships, partnerships',    'count' => '1,540', 'color' => 'green'],
+                ['name' => 'Affiliate Programs', 'icon' => 'local_offer', 'subtitle' => 'Earn with your audience',         'count' => '980',   'color' => 'green'],
+                ['name' => 'Influencer Plans',   'icon' => 'star',        'subtitle' => 'Grow your reach',                'count' => '1,250', 'color' => 'green'],
+            ];
+        }
 
         // Cart count from DB or session
         $cartCount = 3;

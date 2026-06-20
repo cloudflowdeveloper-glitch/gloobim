@@ -136,6 +136,13 @@ class CreatorController extends Controller
         $posts = [];
         $videos = [];
         $followerCount = 0;
+        $followingCount = 0;
+        $reelsCount = 0;
+        $musicCount = 0;
+        $marketplaceCount = 0;
+        $totalViews = 0;
+        $totalLikes = 0;
+        $walletBalance = 0;
 
         try {
             if ($username === 'me' && $user) {
@@ -154,12 +161,72 @@ class CreatorController extends Controller
                     "SELECT * FROM videos WHERE user_id = ? AND status = 'published' ORDER BY created_at DESC LIMIT 6",
                     [$profileUser['id']]
                 );
-                // Real follower count
+
+                // Follower count
                 $row = Database::queryOne(
                     "SELECT COUNT(*) AS c FROM followers WHERE following_id = ?",
                     [$profileUser['id']]
                 );
                 $followerCount = (int)($row['c'] ?? 0);
+
+                // Following count
+                $row = Database::queryOne(
+                    "SELECT COUNT(*) AS c FROM followers WHERE follower_id = ?",
+                    [$profileUser['id']]
+                );
+                $followingCount = (int)($row['c'] ?? 0);
+
+                // Reels count
+                $row = Database::queryOne(
+                    "SELECT COUNT(*) AS c FROM reels WHERE user_id = ? AND status = 'published'",
+                    [$profileUser['id']]
+                );
+                $reelsCount = (int)($row['c'] ?? 0);
+
+                // Music count
+                $row = Database::queryOne(
+                    "SELECT COUNT(*) AS c FROM music_tracks WHERE user_id = ? AND status = 'published'",
+                    [$profileUser['id']]
+                );
+                $musicCount = (int)($row['c'] ?? 0);
+
+                // Marketplace count
+                $row = Database::queryOne(
+                    "SELECT COUNT(*) AS c FROM marketplace_listings WHERE user_id = ? AND status = 'active'",
+                    [$profileUser['id']]
+                );
+                $marketplaceCount = (int)($row['c'] ?? 0);
+
+                // Total views across videos and reels
+                $row = Database::queryOne(
+                    "SELECT COALESCE(SUM(v.views), 0) AS v FROM (" .
+                    "  SELECT COALESCE(views, 0) AS views FROM videos WHERE user_id = ? AND status = 'published'" .
+                    "  UNION ALL" .
+                    "  SELECT COALESCE(views, 0) AS views FROM reels WHERE user_id = ? AND status = 'published'" .
+                    ") v",
+                    [$profileUser['id'], $profileUser['id']]
+                );
+                $totalViews = (int)($row['v'] ?? 0);
+
+                // Total likes across posts, videos, and reels
+                $row = Database::queryOne(
+                    "SELECT COALESCE(SUM(l.likes), 0) AS l FROM (" .
+                    "  SELECT COALESCE(likes, 0) AS likes FROM posts WHERE user_id = ? AND status = 'published'" .
+                    "  UNION ALL" .
+                    "  SELECT COALESCE(likes, 0) AS likes FROM videos WHERE user_id = ? AND status = 'published'" .
+                    "  UNION ALL" .
+                    "  SELECT COALESCE(likes, 0) AS likes FROM reels WHERE user_id = ? AND status = 'published'" .
+                    ") l",
+                    [$profileUser['id'], $profileUser['id'], $profileUser['id']]
+                );
+                $totalLikes = (int)($row['l'] ?? 0);
+
+                // Wallet balance
+                $row = Database::queryOne(
+                    "SELECT COALESCE(SUM(balance), 0) AS b FROM wallets WHERE user_id = ?",
+                    [$profileUser['id']]
+                );
+                $walletBalance = (float)($row['b'] ?? 0);
             }
         } catch (\Exception $e) {}
 
@@ -168,6 +235,13 @@ class CreatorController extends Controller
             'posts' => $posts,
             'videos' => $videos,
             'followerCount' => $followerCount,
+            'followingCount' => $followingCount,
+            'reelsCount' => $reelsCount,
+            'musicCount' => $musicCount,
+            'marketplaceCount' => $marketplaceCount,
+            'totalViews' => $totalViews,
+            'totalLikes' => $totalLikes,
+            'walletBalance' => $walletBalance,
             'isOwnProfile' => $user && $profileUser && $user['id'] === $profileUser['id'],
         ]);
     }
@@ -240,5 +314,43 @@ class CreatorController extends Controller
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function uploadAvatar(): Response
+    {
+        $user = \Core\Auth::user();
+        if (!$user) return $this->json(['error' => 'Unauthenticated'], 401);
+
+        if (!isset($_FILES['avatar']) || $_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
+            return $this->json(['error' => 'No file uploaded'], 422);
+        }
+
+        $file = $_FILES['avatar'];
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $maxSize = 5 * 1024 * 1024;
+
+        if (!in_array($file['type'], $allowedTypes)) {
+            return $this->json(['error' => 'Only JPG, PNG, GIF, WebP images allowed'], 422);
+        }
+        if ($file['size'] > $maxSize) {
+            return $this->json(['error' => 'Image must be under 5MB'], 422);
+        }
+
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = 'avatar_' . $user['id'] . '_' . time() . '.' . $ext;
+        $uploadDir = BASE_PATH . '/public/uploads/profiles';
+
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0755, true);
+        }
+
+        $dest = $uploadDir . '/' . $filename;
+        if (move_uploaded_file($file['tmp_name'], $dest)) {
+            $avatarUrl = '/uploads/profiles/' . $filename;
+            Database::execute("UPDATE users SET avatar = ? WHERE id = ?", [$avatarUrl, $user['id']]);
+            return $this->json(['message' => 'Avatar updated', 'avatar' => $avatarUrl]);
+        }
+
+        return $this->json(['error' => 'Failed to save image'], 500);
     }
 }

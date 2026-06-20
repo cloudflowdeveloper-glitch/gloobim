@@ -8,6 +8,16 @@ $posts = $data['posts'] ?? [];
 $videos = $data['videos'] ?? [];
 $isOwnProfile = $data['isOwnProfile'] ?? false;
 
+$followingCount = $data['followingCount'] ?? 0;
+$reelsCount = $data['reelsCount'] ?? 0;
+$musicCount = $data['musicCount'] ?? 0;
+$marketplaceCount = $data['marketplaceCount'] ?? 0;
+$totalViews = $data['totalViews'] ?? 0;
+$totalLikes = $data['totalLikes'] ?? 0;
+$walletBalance = $data['walletBalance'] ?? 0;
+$postsCount = $data['postsCount'] ?? count($posts);
+$videosCount = $data['videosCount'] ?? count($videos);
+
 $name = $profileUser['name'] ?? 'User';
 $username = $profileUser['username'] ?? 'user';
 $avatar = $profileUser['avatar'] ?? '/uploads/profiles/admin.jpg' . urlencode(substr($name, 0, 2));
@@ -163,13 +173,19 @@ if ($name) {
     <section class="card mb-3 fade-section" style="background: #14141c; border-color: #2a2a3e;">
         <div class="flex items-start gap-4">
             <!-- Left: Avatar + Info -->
-            <div class="flex-shrink-0">
+            <div class="relative flex-shrink-0">
                 <?php if ($avatar): ?>
                 <img src="<?= htmlspecialchars($avatar) ?>" alt="<?= htmlspecialchars($name) ?>" class="w-16 h-16 rounded-full object-cover <?= $isVerified ? 'ring-2 ring-brand-500/60' : 'rounded-full' ?>">
                 <?php else: ?>
                 <div class="w-16 h-16 rounded-full gradient-brand flex items-center justify-center text-white text-2xl font-bold <?= $isVerified ? 'ring-2 ring-brand-500/60' : '' ?>">
                     <?= $initials ?: 'U' ?>
                 </div>
+                <?php endif; ?>
+                <?php if ($isOwnProfile): ?>
+                <label class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center cursor-pointer hover:bg-brand-500 transition-colors border-2 border-[#14141c] shadow-lg" title="Change avatar">
+                    <span class="material-icons-round text-white text-sm">camera_alt</span>
+                    <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadAvatar(this)">
+                </label>
                 <?php endif; ?>
             </div>
 
@@ -237,25 +253,8 @@ if ($name) {
                 <div class="w-8 h-8 rounded-lg bg-teal-500/15 flex items-center justify-center mb-2">
                     <span class="material-icons-round text-teal-400 text-base">play_circle</span>
                 </div>
-                <p class="text-white font-bold text-lg leading-none mb-0.5">2.4M</p>
+                <p class="text-white font-bold text-lg leading-none mb-0.5"><?= formatCount($totalViews) ?></p>
                 <p class="text-zinc-500 text-[10px] font-medium mb-1">Views</p>
-                <span class="flex items-center gap-0.5 text-emerald-400 text-[10px] font-semibold">
-                    <svg width="8" height="8" viewBox="0 0 8 8"><path d="M4 1L7 5H1L4 1Z" fill="#34d399"/></svg>
-                    +28.5%
-                </span>
-            </div>
-
-            <!-- Watchtime -->
-            <div class="metric-card bg-[#14141c] rounded-xl p-3 min-w-[110px] flex-shrink-0 border border-[#2a2a3e]/50">
-                <div class="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center mb-2">
-                    <span class="material-icons-round text-purple-400 text-base">schedule</span>
-                </div>
-                <p class="text-white font-bold text-lg leading-none mb-0.5">156.7K</p>
-                <p class="text-zinc-500 text-[10px] font-medium mb-1">Watchtime</p>
-                <span class="flex items-center gap-0.5 text-emerald-400 text-[10px] font-semibold">
-                    <svg width="8" height="8" viewBox="0 0 8 8"><path d="M4 1L7 5H1L4 1Z" fill="#34d399"/></svg>
-                    +34.2%
-                </span>
             </div>
 
             <!-- Followers -->
@@ -265,10 +264,42 @@ if ($name) {
                 </div>
                 <p class="text-white font-bold text-lg leading-none mb-0.5"><?= formatCount($followerCount ?? 0) ?></p>
                 <p class="text-zinc-500 text-[10px] font-medium mb-1">Followers</p>
-                <span class="flex items-center gap-0.5 text-emerald-400 text-[10px] font-semibold">
-                    <svg width="8" height="8" viewBox="0 0 8 8"><path d="M4 1L7 5H1L4 1Z" fill="#34d399"/></svg>
-                    +18.9%
-                </span>
+            </div>
+
+            <!-- Posts -->
+            <div class="metric-card bg-[#14141c] rounded-xl p-3 min-w-[110px] flex-shrink-0 border border-[#2a2a3e]/50">
+                <div class="w-8 h-8 rounded-lg bg-sky-500/15 flex items-center justify-center mb-2">
+                    <span class="material-icons-round text-sky-400 text-base">article</span>
+                </div>
+                <p class="text-white font-bold text-lg leading-none mb-0.5"><?= formatCount($postsCount) ?></p>
+                <p class="text-zinc-500 text-[10px] font-medium mb-1">Posts</p>
+            </div>
+
+            <!-- Videos -->
+            <div class="metric-card bg-[#14141c] rounded-xl p-3 min-w-[110px] flex-shrink-0 border border-[#2a2a3e]/50">
+                <div class="w-8 h-8 rounded-lg bg-rose-500/15 flex items-center justify-center mb-2">
+                    <span class="material-icons-round text-rose-400 text-base">videocam</span>
+                </div>
+                <p class="text-white font-bold text-lg leading-none mb-0.5"><?= formatCount($videosCount) ?></p>
+                <p class="text-zinc-500 text-[10px] font-medium mb-1">Videos</p>
+            </div>
+
+            <!-- Reels -->
+            <div class="metric-card bg-[#14141c] rounded-xl p-3 min-w-[110px] flex-shrink-0 border border-[#2a2a3e]/50">
+                <div class="w-8 h-8 rounded-lg bg-fuchsia-500/15 flex items-center justify-center mb-2">
+                    <span class="material-icons-round text-fuchsia-400 text-base">movie</span>
+                </div>
+                <p class="text-white font-bold text-lg leading-none mb-0.5"><?= formatCount($reelsCount) ?></p>
+                <p class="text-zinc-500 text-[10px] font-medium mb-1">Reels</p>
+            </div>
+
+            <!-- Total Likes -->
+            <div class="metric-card bg-[#14141c] rounded-xl p-3 min-w-[110px] flex-shrink-0 border border-[#2a2a3e]/50">
+                <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center mb-2">
+                    <span class="material-icons-round text-red-400 text-base">favorite</span>
+                </div>
+                <p class="text-white font-bold text-lg leading-none mb-0.5"><?= formatCount($totalLikes) ?></p>
+                <p class="text-zinc-500 text-[10px] font-medium mb-1">Total Likes</p>
             </div>
 
             <!-- Revenue -->
@@ -276,25 +307,8 @@ if ($name) {
                 <div class="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center mb-2">
                     <span class="material-icons-round text-amber-400 text-base">attach_money</span>
                 </div>
-                <p class="text-white font-bold text-lg leading-none mb-0.5">$18,540</p>
+                <p class="text-white font-bold text-lg leading-none mb-0.5"><?= '$' . number_format($walletBalance, 2) ?></p>
                 <p class="text-zinc-500 text-[10px] font-medium mb-1">Revenue</p>
-                <span class="flex items-center gap-0.5 text-emerald-400 text-[10px] font-semibold">
-                    <svg width="8" height="8" viewBox="0 0 8 8"><path d="M4 1L7 5H1L4 1Z" fill="#34d399"/></svg>
-                    +26.7%
-                </span>
-            </div>
-
-            <!-- Engagement Rate -->
-            <div class="metric-card bg-[#14141c] rounded-xl p-3 min-w-[110px] flex-shrink-0 border border-[#2a2a3e]/50">
-                <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center mb-2">
-                    <span class="material-icons-round text-red-400 text-base">favorite</span>
-                </div>
-                <p class="text-white font-bold text-lg leading-none mb-0.5">12.8%</p>
-                <p class="text-zinc-500 text-[10px] font-medium mb-1">Eng. Rate</p>
-                <span class="flex items-center gap-0.5 text-emerald-400 text-[10px] font-semibold">
-                    <svg width="8" height="8" viewBox="0 0 8 8"><path d="M4 1L7 5H1L4 1Z" fill="#34d399"/></svg>
-                    +8.4%
-                </span>
             </div>
 
             <!-- More Button -->
@@ -940,6 +954,25 @@ document.addEventListener('DOMContentLoaded', function() {
         metricObserver.observe(metricsSection);
     }
 });
+
+function uploadAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const fd = new FormData();
+    fd.append('avatar', input.files[0]);
+    fetch('/profile/upload-avatar', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(d => {
+            if (d.error) { alert(d.error); return; }
+            location.reload();
+        })
+        .catch(() => alert('Upload failed'));
+}
+function formatCount(num) {
+    num = parseInt(num) || 0;
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+}
 </script>
 
 <?php $content = ob_get_clean(); ?>
